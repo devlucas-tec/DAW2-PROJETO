@@ -8,6 +8,18 @@
 
 		<!-- TODO: Adicionar as entidades que vocês criaram -->
 		<!-- <class>br.edu.ifpb.es.daw.entities.Book</class> -->
+		<class>br.edu.ifpb.es.daw.entities.Avaliacao</class>
+		<class>br.edu.ifpb.es.daw.entities.Categoria</class>
+		<class>br.edu.ifpb.es.daw.entities.Cliente</class>
+		<class>br.edu.ifpb.es.daw.entities.Cupom</class>
+		<class>br.edu.ifpb.es.daw.entities.Devolucao</class>
+		<class>br.edu.ifpb.es.daw.entities.Endereco</class>
+		<class>br.edu.ifpb.es.daw.entities.Entrega</class>
+		<class>br.edu.ifpb.es.daw.entities.Pagamento</class>
+		<class>br.edu.ifpb.es.daw.entities.Pedido</class>
+		<class>br.edu.ifpb.es.daw.entities.Produto</class>
+		<class>br.edu.ifpb.es.daw.entities.Vendedor</class>
+
 
 		<properties>
 
