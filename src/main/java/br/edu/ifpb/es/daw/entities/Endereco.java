@@ -28,6 +28,7 @@ public class Endereco {
     @Column(length = 2, nullable = false)
     private String estado;
 
+
     // adicionar equals, hashcode e toString
 
 }

@@ -54,5 +54,6 @@ public class Vendedor {
         return Objects.equals(cnpjCpf, vendedor.cnpjCpf);
     }
 
+
     // adicionar hashcode e toString
 }

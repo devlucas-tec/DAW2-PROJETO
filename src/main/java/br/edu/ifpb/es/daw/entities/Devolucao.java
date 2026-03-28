@@ -28,6 +28,7 @@ public class Devolucao {
     @Column(length = 50, nullable = false)
     private String status;
 
+
     // adicionar equals, hashcode e toString
 
 }

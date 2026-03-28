@@ -20,6 +20,7 @@
 		<class>br.edu.ifpb.es.daw.entities.Produto</class>
 		<class>br.edu.ifpb.es.daw.entities.Vendedor</class>
 
+
 		<properties>
 
 			<!-- Database PostgreSQL-->

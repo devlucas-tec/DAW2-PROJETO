@@ -16,6 +16,7 @@ public class Categoria {
     @Column(length = 350)
     private String descricao;
 
+
     // adicionar equals, hashcode e toString
 
 }

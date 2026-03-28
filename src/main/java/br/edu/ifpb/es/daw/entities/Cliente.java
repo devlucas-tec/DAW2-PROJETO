@@ -29,6 +29,7 @@ public class Cliente {
     @Column(name = "data_atualizacao", insertable = false, updatable = false, unique = true)
     private LocalDateTime dataAtualizacao;
 
+
     // adicionar equals, hashcode e toString
 
 }

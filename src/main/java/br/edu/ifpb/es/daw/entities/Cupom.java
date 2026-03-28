@@ -32,6 +32,7 @@ public class Cupom {
     @Column(name = "status", length = 20)
     private StatusEnum status = StatusEnum.ATIVO;
 
+
     // adicionar equals, hashcode e toString
 
 }

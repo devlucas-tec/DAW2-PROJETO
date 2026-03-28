@@ -21,6 +21,7 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", insertable = false, updatable = false)
     private LocalDateTime dataAvaliacao;
 
+
     // adicionar equals, hashcode e toString
 
 }

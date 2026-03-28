@@ -27,6 +27,7 @@ public class Entrega {
     @Column(name = "data_entrega_prevista")
     private LocalDateTime dataEntregaPrevista;
 
+
     // adicionar equals, hashcode e toString
 
 }

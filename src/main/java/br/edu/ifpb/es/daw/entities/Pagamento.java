@@ -25,6 +25,7 @@ public class Pagamento {
     @Column(name = "data_pagamento", insertable = false, updatable = false)
     private LocalDateTime dataPagamento;
 
+
     // adicionar equals, hashcode e toString
 
 }
