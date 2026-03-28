@@ -1,0 +1,6 @@
+TODO: adicionem neste pacote as classes "main" que serão usadas para exercitar as entidades criadas.
+    Para cada entidade você deve, minimamente, criar as classe main "MainXSave" e "MainXDeleteAll" correspondente, onde o "X"
+    remete ao nome da entidade em questão. Na raiz do pacote "daw" foi disponibilizado arcabouço inicial de implementação
+    destas classes, façam uso delas como base. Exemplo do que precisa ser feito: se você tem uma entidade chamada Xpto,
+    você deve criar as classes "MainXptoSave" e "MainXptoDeleteAll" para esta entidade.
+    Processo semelhante para todas as outras entidades que você tenha.

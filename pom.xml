@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>br.edu.ifpb.es.daw</groupId>
+	<artifactId>crud-jpa-template</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<hibernate.version>7.2.7.Final</hibernate.version>
+		<eclipselink.version>4.0.9</eclipselink.version>
+		<postgresql.driver.version>42.7.10</postgresql.driver.version>
+		<mysql.driver.version>9.6.0</mysql.driver.version>
+		<maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+	</properties>
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/jakarta.platform/jakarta.jakartaee-api -->
+		<dependency>
+			<groupId>jakarta.platform</groupId>
+			<artifactId>jakarta.jakartaee-api</artifactId>
+			<version>10.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Implementação do JPA: Hibernate -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<!-- Pool de conexões com o banco de dados - Hibernate <-> c3p0 -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<!-- JDBC Driver do PostgreSQL -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.driver.version}</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<!-- Repackages the project classes together with their dependencies into a single uber-jar,
+					optionally renaming classes or removing unused classes.
+					Referência: https://maven.apache.org/plugins/maven-shade-plugin/
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${maven.shade.plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!--
+					Plugin que habilita mecanismo do Hibernate para fazer com que o "Lazy loading" funcione corretamente.
+					Referência1: https://docs.hibernate.org/orm/7.2/userguide/html_single/#tooling-maven
+					Referência2: https://docs.hibernate.org/orm/7.2/userguide/html_single/#tooling-maven-enhancement
+					Referência3: https://docs.hibernate.org/orm/7.2/userguide/html_single/#BytecodeEnhancement-lazy-loading
+				-->
+				<groupId>org.hibernate.orm</groupId>
+				<artifactId>hibernate-maven-plugin</artifactId>
+				<version>${hibernate.version}</version>
+				<executions>
+					<execution>
+						<configuration>
+							<enableLazyInitialization>true</enableLazyInitialization>
+						</configuration>
+						<goals>
+							<goal>enhance</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.1"
+			 xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
+
+	<persistence-unit name="daw" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+		<!-- TODO: Adicionar as entidades que vocês criaram -->
+		<!-- <class>br.edu.ifpb.es.daw.entities.Book</class> -->
+
+		<properties>
+
+			<!-- Database PostgreSQL-->
+			<!--
+			 -->
+			<property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+			<property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/daw" />
+			<property name="jakarta.persistence.jdbc.user" value="daw" />
+			<property name="jakarta.persistence.jdbc.password" value="daw" />
+			<!-- /Database PostgreSQL-->
+
+			<!-- HIBERNATE -->
+
+			<!-- Configuração Hibernate -->
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.use_sql_comments" value="true" />
+			<!-- /Configuração Hibernate -->
+
+			<!-- Configuração Hibernate SGBD PostgreSQL -->
+			<!--
+			-->
+			<property name="hibernate.default_schema" value="public" />
+			<!-- /Configuração Hibernate SGBD PostgreSQL -->
+
+			<!-- Configuração do Pool de conexões Hibernate -->
+			<!-- DICA: checar conexões ativas no PostgreSQL: SELECT * FROM pg_stat_activity; -->
+			<!-- Why use connection pooling: https://stackoverflow.com/a/16108276/4023351 -->
+			<!--
+			 -->
+			<property name="hibernate.c3p0.min_size" value="5" />
+			<property name="hibernate.c3p0.max_size" value="20" />
+			<property name="hibernate.c3p0.timeout" value="3000" />
+			<property name="hibernate.c3p0.max_statements" value="50" />
+			<property name="hibernate.c3p0.idle_test_period" value="300" />
+			<!-- /Configuração do Pool de conexões Hibernate -->
+
+			<!-- /HIBERNATE -->
+		</properties>
+	</persistence-unit>
+</persistence>

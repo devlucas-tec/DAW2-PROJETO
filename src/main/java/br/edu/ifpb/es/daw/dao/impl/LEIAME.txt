@@ -1,0 +1,3 @@
+TODO: adicionem neste pacote as implementações das interfaces criadas na raiz do pacote "dao".
+    Estas implementações devem implementar a respectiva inteface do DAO que representa, além de estender
+    da classe "dao" base fornecida (br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl).

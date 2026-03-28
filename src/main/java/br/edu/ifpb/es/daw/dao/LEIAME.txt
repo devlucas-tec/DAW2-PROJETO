@@ -1,0 +1,2 @@
+TODO: adicionem neste pacote as Interfaces que representam os DAOs de cada entidade criada.
+    Estas interfaces devem estender a inteface base disponibilizada (br.edu.ifpb.es.daw.dao.DAO).
