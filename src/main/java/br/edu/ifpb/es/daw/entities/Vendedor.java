@@ -10,12 +10,13 @@ public class Vendedor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id_vendedor")
     private Long id;
 
     @Column(name = "razao_social", length = 150, nullable = false)
     private String razaoSocial;
 
-    @Column(name = "cnj_cpf", length = 18)
+    @Column(name = "cnj_cpf", length = 18, nullable = false, unique = true)
     private String cnpjCpf;
 
     public Vendedor() {
@@ -46,6 +47,8 @@ public class Vendedor {
         this.cnpjCpf = cnpjCpf;
     }
 
+
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -54,6 +57,16 @@ public class Vendedor {
         return Objects.equals(cnpjCpf, vendedor.cnpjCpf);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(cnpjCpf);
+    }
 
-    // adicionar hashcode e toString
+    @Override
+    public String toString() {
+        return "Vendedor{" +
+                "cnpjCpf='" + cnpjCpf + '\'' +
+                '}';
+    }
+
 }
