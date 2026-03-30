@@ -2,15 +2,18 @@ package br.edu.ifpb.es.daw.dao;
 
 import java.util.List;
 
-public interface DAO<E, T> {
 
-    void save(E obj) throws PersistenciaDawException;
+public interface DAO<T> {
 
-    E update(E obj) throws PersistenciaDawException;
+    void save(T entity);
 
-    void delete(T primaryKey) throws PersistenciaDawException;
+    T findById(Long id);
 
-    E getByID(T primaryKey) throws PersistenciaDawException;
+    List<T> findAll();
 
-    List<E> getAll() throws PersistenciaDawException;
+    void update(T entity);
+
+    void delete(T entity);
+
+    void deleteAll();
 }

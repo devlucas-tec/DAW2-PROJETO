@@ -1,0 +1,12 @@
+package br.edu.ifpb.es.daw.dao.impl;
+
+import br.edu.ifpb.es.daw.dao.CupomDAO;
+import br.edu.ifpb.es.daw.entities.Cupom;
+import jakarta.persistence.EntityManager;
+
+public class CupomDAOImpl extends AbstractDAOImpl<Cupom> implements CupomDAO {
+
+    public CupomDAOImpl(EntityManager entityManager) {
+        super(entityManager);
+    }
+}
