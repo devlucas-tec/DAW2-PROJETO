@@ -1,109 +1,90 @@
 package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.DAO;
-import br.edu.ifpb.es.daw.dao.PersistenciaDawException;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
-
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-public abstract class AbstractDAOImpl<E, T> implements DAO<E, T> {
+public abstract class AbstractDAOImpl<T> implements DAO<T> {
 
-	private EntityManagerFactory emf;
+	protected EntityManager entityManager;
+	protected Class<T> entityClass;
 
-	private Class<E> entityClass;
-
-	public AbstractDAOImpl(Class<E> entityClass, EntityManagerFactory emf) {
-		this.entityClass = entityClass;
-		this.emf = emf;
-	}
-
-	protected EntityManager getEntityManager() {
-		return emf.createEntityManager();
+	public AbstractDAOImpl(EntityManager entityManager) {
+		this.entityManager = entityManager;
+		// Obtém a classe genérica da entidade em tempo de execução
+		@SuppressWarnings("unchecked")
+		ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+		this.entityClass = (Class<T>) parameterizedType.getActualTypeArguments()[0];
 	}
 
 	@Override
-	public void save(E obj) throws PersistenciaDawException {
-		try(EntityManager em = getEntityManager()) {
-			EntityTransaction transaction = em.getTransaction();
-			transaction.begin();
-			try {
-				em.persist(obj);
-				transaction.commit();
-			} catch (PersistenceException pe) {
-				pe.printStackTrace();
-				if (transaction.isActive()) {
-					transaction.rollback();
-				}
-				throw new PersistenciaDawException("Ocorreu algum erro ao tentar salvar a entidade.", pe);
+	public void save(T entity) {
+		entityManager.getTransaction().begin();
+		try {
+			entityManager.persist(entity);
+			entityManager.getTransaction().commit();
+		} catch (Exception e) {
+			if (entityManager.getTransaction().isActive()) {
+				entityManager.getTransaction().rollback();
 			}
+			throw new RuntimeException("Erro ao salvar a entidade: " + entityClass.getSimpleName(), e);
 		}
 	}
 
 	@Override
-	public E update(E obj) throws PersistenciaDawException {
-		try(EntityManager em = getEntityManager()) {
-			EntityTransaction transaction = em.getTransaction();
-			transaction.begin();
-			try {
-				E resultado = em.merge(obj);
-				transaction.commit();
-				return resultado;
-			} catch (PersistenceException pe) {
-				pe.printStackTrace();
-				if (transaction.isActive()) {
-					transaction.rollback();
-				}
-				throw new PersistenciaDawException("Ocorreu algum erro ao tentar atualizar a entidade.", pe);
+	public T findById(Long id) {
+		return entityManager.find(entityClass, id);
+	}
+
+	@Override
+	public List<T> findAll() {
+		String jpql = "SELECT e FROM " + entityClass.getSimpleName() + " e";
+		TypedQuery<T> query = entityManager.createQuery(jpql, entityClass);
+		return query.getResultList();
+	}
+
+	@Override
+	public void update(T entity) {
+		entityManager.getTransaction().begin();
+		try {
+			entityManager.merge(entity);
+			entityManager.getTransaction().commit();
+		} catch (Exception e) {
+			if (entityManager.getTransaction().isActive()) {
+				entityManager.getTransaction().rollback();
 			}
+			throw new RuntimeException("Erro ao atualizar a entidade: " + entityClass.getSimpleName(), e);
 		}
 	}
 
 	@Override
-	public void delete(T primaryKey) throws PersistenciaDawException {
-		try(EntityManager em = getEntityManager()) {
-			EntityTransaction transaction = em.getTransaction();
-			transaction.begin();
-			try {
-				E obj = em.getReference(this.entityClass, primaryKey);
-				em.remove(obj);
-				transaction.commit();
-			} catch (PersistenceException pe) {
-				pe.printStackTrace();
-				if (transaction.isActive()) {
-					transaction.rollback();
-				}
-				throw new PersistenciaDawException("Ocorreu algum erro ao tentar remover a entidade.", pe);
+	public void delete(T entity) {
+		entityManager.getTransaction().begin();
+		try {
+			entityManager.remove(entityManager.merge(entity));
+			entityManager.getTransaction().commit();
+		} catch (Exception e) {
+			if (entityManager.getTransaction().isActive()) {
+				entityManager.getTransaction().rollback();
 			}
+			throw new RuntimeException("Erro ao remover a entidade: " + entityClass.getSimpleName(), e);
 		}
 	}
 
 	@Override
-	public E getByID(T primaryKey) throws PersistenciaDawException {
-		try(EntityManager em = getEntityManager()) {
-			try {
-				return em.find(this.entityClass, primaryKey);
-			} catch (PersistenceException pe) {
-				pe.printStackTrace();
-				throw new PersistenciaDawException("Ocorreu algum erro ao tentar recuperar a entidade com base no ID.", pe);
+	public void deleteAll() {
+		entityManager.getTransaction().begin();
+		try {
+			String jpql = "DELETE FROM " + entityClass.getSimpleName();
+			entityManager.createQuery(jpql).executeUpdate();
+			entityManager.getTransaction().commit();
+		} catch (Exception e) {
+			if (entityManager.getTransaction().isActive()) {
+				entityManager.getTransaction().rollback();
 			}
+			throw new RuntimeException("Erro ao remover todas as entidades: " + entityClass.getSimpleName(), e);
 		}
 	}
-
-	@Override
-	public List<E> getAll() throws PersistenciaDawException {
-		try(EntityManager em = getEntityManager()) {
-			try {
-				TypedQuery<E> query = em.createQuery(String.format("SELECT obj FROM %s obj", this.entityClass.getSimpleName()), this.entityClass);
-				return query.getResultList();
-			} catch (PersistenceException pe) {
-				pe.printStackTrace();
-				throw new PersistenciaDawException("Ocorreu algum erro ao tentar recuperar todas as instâncias da entidade.", pe);
-			}
-		}
-	}
-
 }
