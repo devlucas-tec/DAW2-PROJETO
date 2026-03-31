@@ -20,8 +20,13 @@ public class Avaliacao {
     @Column(length = 350)
     private String comentario;
 
-    @Column(name = "data_avaliacao", insertable = false, updatable = false)
+    @Column(name = "data_avaliacao", nullable = false)
     private LocalDateTime dataAvaliacao;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataAvaliacao = LocalDateTime.now();
+    }
 
     public Avaliacao() {
     }

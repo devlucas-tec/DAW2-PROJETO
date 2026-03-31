@@ -10,7 +10,8 @@ import java.util.Objects;
 public class Cliente {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cliente_seq")
+    @SequenceGenerator(name = "cliente_seq", sequenceName = "seq_cliente_id", allocationSize = 1)
     @Column(name = "id_cliente")
     private Long id;
 
@@ -25,11 +26,23 @@ public class Cliente {
 
     private String telefone;
 
-    @Column(name = "data_cadastro", insertable = false, updatable = false)
+    @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(name = "data_atualizacao", insertable = false, updatable = false)
+    @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCadastro = LocalDateTime.now();
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
 
     public Cliente() {
     }

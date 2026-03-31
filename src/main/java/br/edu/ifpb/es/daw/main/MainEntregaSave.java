@@ -21,7 +21,6 @@ public class MainEntregaSave {
 
         entrega.setTransportadora("Correios");
 
-        // 🔥 CAMPO ÚNICO
         entrega.setCodigoRastreamento("BR" + System.nanoTime());
 
         entrega.setStatusEntrega("ENVIADO");

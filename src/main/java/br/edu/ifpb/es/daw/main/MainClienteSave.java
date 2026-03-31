@@ -19,7 +19,6 @@ public class MainClienteSave {
 
         cliente.setNome("João da Silva");
 
-        // 🔥 OBRIGATÓRIO (campo único)
         cliente.setEmail("joao" + System.nanoTime() + "@gmail.com");
 
         cliente.setSenha("123456");

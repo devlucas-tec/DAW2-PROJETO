@@ -17,7 +17,7 @@ public class Entrega {
     @Column(length = 50)
     private String transportadora;
 
-    @Column(length = 50, unique = true)
+    @Column(name = "codigo_rastreamento", length = 50, unique = true)
     private String codigoRastreamento;
 
     @Column(name = "status_entrega", nullable = false)

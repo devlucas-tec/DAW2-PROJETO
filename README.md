@@ -45,5 +45,5 @@ Abaixo, a representação visual do modelo conceitual do projeto, que foi desenv
 [🔗 Visualizar diagrama original no editor](https://app.brmodeloweb.com/#!/publicview/69a720f96431b763534360b3)
 
 ---
-**Desenvolvido por Lucas Barbosa; Paulo Moura e ValdênioPantaleão**
+**Desenvolvido por: Lucas Barbosa; Paulo Moura e ValdênioPantaleão**
 Estudantes de ADS - IFPB / 4° Período

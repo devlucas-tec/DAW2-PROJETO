@@ -27,23 +27,24 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
-    @Column(name = "data_cadastro", insertable = false, updatable = false)
+    @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(name = "data_atualizacao", insertable = false, updatable = false)
+    @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
-
-    public Produto() {
-    }
 
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();
+        this.dataAtualizacao = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.dataAtualizacao = LocalDateTime.now();
+    }
+
+    public Produto() {
     }
 
     public Long getId() {

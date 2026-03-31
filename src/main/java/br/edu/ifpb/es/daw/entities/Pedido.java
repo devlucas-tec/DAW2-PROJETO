@@ -15,7 +15,7 @@ public class Pedido {
     @Column(name = "id_pedido")
     private Long id;
 
-    @Column(name = "data_pedido", updatable = false)
+    @Column(name = "data_pedido", nullable = false, updatable = false)
     private LocalDateTime dataPedido;
 
     @Column(name = "valor_total", precision = 10, scale = 2, nullable = false)

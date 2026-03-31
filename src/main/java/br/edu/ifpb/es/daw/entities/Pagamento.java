@@ -24,15 +24,15 @@ public class Pagamento {
     @Column(name = "valor_pago", precision = 10, scale = 2, nullable = false)
     private BigDecimal valorPago;
 
-    @Column(name = "data_pagamento", insertable = false, updatable = false)
+    @Column(name = "data_pagamento", nullable = false)
     private LocalDateTime dataPagamento;
-
-    public Pagamento() {
-    }
 
     @PrePersist
     protected void onCreate() {
         this.dataPagamento = LocalDateTime.now();
+    }
+
+    public Pagamento() {
     }
 
     public Long getId() {
