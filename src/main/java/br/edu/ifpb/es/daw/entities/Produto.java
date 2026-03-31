@@ -30,7 +30,7 @@ public class Produto {
     @Column(name = "data_cadastro", insertable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(name = "data_atualizacao", insertable = false, updatable = false, unique = true)
+    @Column(name = "data_atualizacao", insertable = false, updatable = false)
     private LocalDateTime dataAtualizacao;
 
     public Produto() {
