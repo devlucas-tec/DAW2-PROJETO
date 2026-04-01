@@ -22,7 +22,7 @@ public class Pedido {
     private BigDecimal valorTotal;
 
     @Column(length = 50, nullable = false)
-    private String status;
+    private StatusPedido status;
 
     public Pedido() {
     }
@@ -56,11 +56,11 @@ public class Pedido {
         this.valorTotal = valorTotal;
     }
 
-    public String getStatus() {
+    public StatusPedido getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusPedido status) {
         this.status = status;
     }
 

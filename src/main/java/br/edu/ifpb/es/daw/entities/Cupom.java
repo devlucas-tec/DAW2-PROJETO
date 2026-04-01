@@ -26,7 +26,7 @@ public class Cupom {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    private StatusEnum status = StatusEnum.ATIVO;
+    private StatusCupom status = StatusCupom.ATIVO;
 
     public Cupom() {
     }
@@ -63,11 +63,11 @@ public class Cupom {
         this.dataExpiracao = dataExpiracao;
     }
 
-    public StatusEnum getStatus() {
+    public StatusCupom getStatus() {
         return status;
     }
 
-    public void setStatus(StatusEnum status) {
+    public void setStatus(StatusCupom status) {
         this.status = status;
     }
 

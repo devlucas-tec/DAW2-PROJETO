@@ -20,8 +20,6 @@ public class MainDevolucaoSave {
         Devolucao devolucao = new Devolucao();
 
         devolucao.setMotivo("Produto com defeito");
-        devolucao.setTipoCompensacao("REEMBOLSO");
-        devolucao.setValorCompensado(new BigDecimal("150.00"));
         devolucao.setStatus("ATIVO");
 
         dao.save(devolucao);

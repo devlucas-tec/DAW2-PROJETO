@@ -2,7 +2,6 @@ package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -21,15 +20,9 @@ public class Devolucao {
     @Column(nullable = false, length = 1000)
     private String motivo;
 
-    @Column(name = "tipo_compensacao", length = 50, nullable = false)
-    private String tipoCompensacao;
-
-    @Column(name = "valor_compensado", precision = 10, scale = 2)
-    private BigDecimal valorCompensado;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private StatusEnum status = StatusEnum.ATIVO;
+    private StatusCupom status = StatusCupom.ATIVO;
 
     public Devolucao() {
     }
@@ -63,28 +56,12 @@ public class Devolucao {
         this.motivo = motivo;
     }
 
-    public String getTipoCompensacao() {
-        return tipoCompensacao;
-    }
-
-    public void setTipoCompensacao(String tipoCompensacao) {
-        this.tipoCompensacao = tipoCompensacao;
-    }
-
-    public BigDecimal getValorCompensado() {
-        return valorCompensado;
-    }
-
-    public void setValorCompensado(BigDecimal valorCompensado) {
-        this.valorCompensado = valorCompensado;
-    }
-
-    public StatusEnum getStatus() {
+    public StatusCupom getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
-        this.status = StatusEnum.valueOf(status);
+        this.status = StatusCupom.valueOf(status);
     }
 
     @Override
@@ -104,7 +81,6 @@ public class Devolucao {
         return "Devolucao{" +
                 "id=" + id +
                 ", status='" + status + '\'' +
-                ", valorCompensado=" + valorCompensado +
                 '}';
     }
 

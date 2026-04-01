@@ -2,8 +2,10 @@ package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.PagamentoDAO;
 import br.edu.ifpb.es.daw.dao.impl.PagamentoDAOImpl;
+import br.edu.ifpb.es.daw.entities.MetodoPagamento;
 import br.edu.ifpb.es.daw.entities.Pagamento;
 
+import br.edu.ifpb.es.daw.entities.StatusPagamento;
 import br.edu.ifpb.es.daw.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 
@@ -19,8 +21,8 @@ public class MainPagamentoSave {
 
         Pagamento pagamento = new Pagamento();
 
-        pagamento.setMetodo("PIX");
-        pagamento.setStatus("APROVADO");
+        pagamento.setMetodo(MetodoPagamento.PIX);
+        pagamento.setStatus(StatusPagamento.APROVADO);
         pagamento.setValorPago(new BigDecimal("250.00"));
 
         dao.save(pagamento);

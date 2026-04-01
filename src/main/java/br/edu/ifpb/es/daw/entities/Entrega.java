@@ -21,7 +21,7 @@ public class Entrega {
     private String codigoRastreamento;
 
     @Column(name = "status_entrega", nullable = false)
-    private String statusEntrega;
+    private StatusEntrega statusEntrega;
 
     @Column(name = "data_envio")
     private LocalDateTime dataEnvio;
@@ -56,11 +56,11 @@ public class Entrega {
         this.codigoRastreamento = codigoRastreamento;
     }
 
-    public String getStatusEntrega() {
+    public StatusEntrega getStatusEntrega() {
         return statusEntrega;
     }
 
-    public void setStatusEntrega(String statusEntrega) {
+    public void setStatusEntrega(StatusEntrega statusEntrega) {
         this.statusEntrega = statusEntrega;
     }
 

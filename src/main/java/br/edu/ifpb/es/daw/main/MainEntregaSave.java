@@ -3,6 +3,7 @@ package br.edu.ifpb.es.daw.main;
 import br.edu.ifpb.es.daw.dao.EntregaDAO;
 import br.edu.ifpb.es.daw.dao.impl.EntregaDAOImpl;
 import br.edu.ifpb.es.daw.entities.Entrega;
+import br.edu.ifpb.es.daw.entities.StatusEntrega;
 import br.edu.ifpb.es.daw.util.JPAUtil;
 
 import jakarta.persistence.EntityManager;
@@ -23,7 +24,7 @@ public class MainEntregaSave {
 
         entrega.setCodigoRastreamento("BR" + System.nanoTime());
 
-        entrega.setStatusEntrega("ENVIADO");
+        entrega.setStatusEntrega(StatusEntrega.SAIU_PARA_ENTREGA);
 
         entrega.setDataEnvio(LocalDateTime.now());
         entrega.setDataEntregaPrevista(LocalDateTime.now().plusDays(7));

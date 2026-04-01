@@ -1,7 +1,6 @@
 package br.edu.ifpb.es.daw.entities;
 
-public enum StatusEnum {
+public enum StatusCupom {
     ATIVO,
-    INATIVO,
-    PENDENTE
+    INATIVO
 }

@@ -3,7 +3,7 @@ package br.edu.ifpb.es.daw.main;
 import br.edu.ifpb.es.daw.dao.CupomDAO;
 import br.edu.ifpb.es.daw.dao.impl.CupomDAOImpl;
 import br.edu.ifpb.es.daw.entities.Cupom;
-import br.edu.ifpb.es.daw.entities.StatusEnum;
+import br.edu.ifpb.es.daw.entities.StatusCupom;
 
 import br.edu.ifpb.es.daw.util.JPAUtil;
 import jakarta.persistence.EntityManager;
@@ -25,7 +25,7 @@ public class MainCupomSave {
 
         cupom.setValorDesconto(new BigDecimal("50.00"));
         cupom.setDataExpiracao(LocalDate.now().plusDays(30));
-        cupom.setStatus(StatusEnum.ATIVO);
+        cupom.setStatus(StatusCupom.ATIVO);
 
         dao.save(cupom);
 

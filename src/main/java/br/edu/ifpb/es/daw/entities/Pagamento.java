@@ -16,10 +16,10 @@ public class Pagamento {
     private Long id;
 
     @Column(length = 50, nullable = false)
-    private String metodo;
+    private MetodoPagamento metodo;
 
     @Column(length = 50, nullable = false)
-    private String status;
+    private StatusPagamento status;
 
     @Column(name = "valor_pago", precision = 10, scale = 2, nullable = false)
     private BigDecimal valorPago;
@@ -43,19 +43,19 @@ public class Pagamento {
         this.id = id;
     }
 
-    public String getMetodo() {
+    public MetodoPagamento getMetodo() {
         return metodo;
     }
 
-    public void setMetodo(String metodo) {
+    public void setMetodo(MetodoPagamento metodo) {
         this.metodo = metodo;
     }
 
-    public String getStatus() {
+    public StatusPagamento getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusPagamento status) {
         this.status = status;
     }
 

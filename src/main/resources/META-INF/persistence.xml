@@ -19,6 +19,9 @@
 		<class>br.edu.ifpb.es.daw.entities.Pedido</class>
 		<class>br.edu.ifpb.es.daw.entities.Produto</class>
 		<class>br.edu.ifpb.es.daw.entities.Vendedor</class>
+		<class>br.edu.ifpb.es.daw.entities.Carrinho</class>
+		<class>br.edu.ifpb.es.daw.entities.ItemCarrinho</class>
+		<class>br.edu.ifpb.es.daw.entities.ItemPedido</class>
 
 
 		<properties>
