@@ -10,6 +10,7 @@ public class ItemCarrinho {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id_item_carrinho")
     private Long id;
 
     @Column(nullable = false)

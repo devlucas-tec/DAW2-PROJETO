@@ -11,7 +11,7 @@ public class ItemPedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_produto")
+    @Column(name = "id_item_pedido")
     private Long id;
 
     @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)

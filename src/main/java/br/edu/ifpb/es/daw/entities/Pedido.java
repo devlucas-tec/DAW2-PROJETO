@@ -60,7 +60,7 @@ public class Pedido {
         return status;
     }
 
-    public void setStatus(StatusPedido status) {
+    public void setStatus(StatusPedido  status) {
         this.status = status;
     }
 
