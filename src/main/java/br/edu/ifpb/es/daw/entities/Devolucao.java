@@ -22,7 +22,7 @@ public class Devolucao {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private StatusCupom status = StatusCupom.ATIVO;
+    private StatusDevolucao status = StatusDevolucao.APROVADA;
 
     public Devolucao() {
     }
@@ -56,12 +56,12 @@ public class Devolucao {
         this.motivo = motivo;
     }
 
-    public StatusCupom getStatus() {
+    public StatusDevolucao getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
-        this.status = StatusCupom.valueOf(status);
+        this.status = StatusDevolucao.valueOf(status);
     }
 
     @Override
