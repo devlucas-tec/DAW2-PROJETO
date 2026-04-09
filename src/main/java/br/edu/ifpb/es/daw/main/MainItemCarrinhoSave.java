@@ -1,10 +1,12 @@
 package br.edu.ifpb.es.daw.main;
 
-import br.edu.ifpb.es.daw.dao.impl.ItemCarrinhoDAO;
+import br.edu.ifpb.es.daw.dao.ItemCarrinhoDAO;
 import br.edu.ifpb.es.daw.dao.impl.ItemCarrinhoDAOImpl;
 import br.edu.ifpb.es.daw.entities.ItemCarrinho;
 import br.edu.ifpb.es.daw.util.JPAUtil;
 import jakarta.persistence.EntityManager;
+
+import java.math.BigDecimal;
 
 public class MainItemCarrinhoSave {
 
@@ -14,6 +16,8 @@ public class MainItemCarrinhoSave {
         ItemCarrinhoDAO dao = new ItemCarrinhoDAOImpl(em);
 
         ItemCarrinho itemCarrinho = new ItemCarrinho();
+
+        itemCarrinho.setPrecoUnitario(BigDecimal.valueOf(100.25));
 
         itemCarrinho.setQuantidade(50);
 

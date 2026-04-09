@@ -2,6 +2,7 @@ package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -12,6 +13,9 @@ public class ItemCarrinho {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id_item_carrinho")
     private Long id;
+
+    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoUnitario;
 
     @Column(nullable = false)
     private Integer quantidade;
@@ -35,6 +39,10 @@ public class ItemCarrinho {
         this.quantidade = quantidade;
     }
 
+    public BigDecimal getPrecoUnitario() { return precoUnitario; }
+
+    public void setPrecoUnitario(BigDecimal precoUnitario) { this.precoUnitario = precoUnitario; }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -44,13 +52,14 @@ public class ItemCarrinho {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, quantidade);
+        return Objects.hash(id, precoUnitario, quantidade);
     }
 
     @Override
     public String toString() {
         return "ItemCarrinho{" +
                 "id=" + id +
+                ", precoUnitario=" + precoUnitario +
                 ", quantidade=" + quantidade +
                 '}';
     }

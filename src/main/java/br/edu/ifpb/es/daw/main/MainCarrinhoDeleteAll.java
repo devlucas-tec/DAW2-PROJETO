@@ -1,6 +1,6 @@
 package br.edu.ifpb.es.daw.main;
 
-import br.edu.ifpb.es.daw.dao.impl.CarrinhoDAO;
+import br.edu.ifpb.es.daw.dao.CarrinhoDAO;
 import br.edu.ifpb.es.daw.dao.impl.CarrinhoDAOImpl;
 import br.edu.ifpb.es.daw.util.JPAUtil;
 import jakarta.persistence.EntityManager;
