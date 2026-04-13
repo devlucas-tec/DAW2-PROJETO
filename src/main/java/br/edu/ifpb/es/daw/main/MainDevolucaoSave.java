@@ -4,6 +4,7 @@ import br.edu.ifpb.es.daw.dao.DevolucaoDAO;
 import br.edu.ifpb.es.daw.dao.impl.DevolucaoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Devolucao;
 
+import br.edu.ifpb.es.daw.entities.StatusDevolucao;
 import br.edu.ifpb.es.daw.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 
@@ -20,7 +21,7 @@ public class MainDevolucaoSave {
         Devolucao devolucao = new Devolucao();
 
         devolucao.setMotivo("Produto com defeito");
-        devolucao.setStatus("ATIVO");
+        devolucao.setStatus(StatusDevolucao.APROVADA);
 
         dao.save(devolucao);
 
