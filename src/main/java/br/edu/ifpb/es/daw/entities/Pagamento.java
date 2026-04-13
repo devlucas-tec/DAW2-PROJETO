@@ -16,9 +16,11 @@ public class Pagamento {
     private Long id;
 
     @Column(length = 50, nullable = false)
+    @Enumerated(EnumType.STRING)
     private MetodoPagamento metodo;
 
     @Column(length = 50, nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatusPagamento status;
 
     @Column(name = "valor_pago", precision = 10, scale = 2, nullable = false)

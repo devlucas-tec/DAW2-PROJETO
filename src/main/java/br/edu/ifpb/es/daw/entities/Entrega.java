@@ -21,6 +21,7 @@ public class Entrega {
     private String codigoRastreamento;
 
     @Column(name = "status_entrega", nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatusEntrega statusEntrega;
 
     @Column(name = "data_envio")

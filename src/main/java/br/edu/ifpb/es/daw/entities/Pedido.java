@@ -22,6 +22,7 @@ public class Pedido {
     private BigDecimal valorTotal;
 
     @Column(length = 50, nullable = false)
+    @Enumerated(EnumType.STRING)
     private StatusPedido status;
 
     public Pedido() {
