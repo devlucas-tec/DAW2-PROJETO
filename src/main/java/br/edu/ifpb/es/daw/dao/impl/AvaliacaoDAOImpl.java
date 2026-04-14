@@ -6,7 +6,8 @@ import jakarta.persistence.EntityManager;
 
 public class AvaliacaoDAOImpl extends AbstractDAOImpl<Avaliacao> implements AvaliacaoDAO {
 
-    public AvaliacaoDAOImpl(EntityManager entityManager) {
-        super(entityManager);
+    public AvaliacaoDAOImpl() {
+
+        super(Avaliacao.class);
     }
 }

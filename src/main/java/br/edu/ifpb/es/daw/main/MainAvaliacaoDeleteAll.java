@@ -1,23 +1,28 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.AvaliacaoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.AvaliacaoDAOImpl;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class MainAvaliacaoDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try{
 
-        AvaliacaoDAO dao = new AvaliacaoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            AvaliacaoDAO dao = new AvaliacaoDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todas as avaliações foram removidas!");
+            System.out.println("Todas as avaliações foram removidas!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
     }
 }

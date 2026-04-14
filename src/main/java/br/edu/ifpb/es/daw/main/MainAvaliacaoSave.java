@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.AvaliacaoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.AvaliacaoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Avaliacao;
 import br.edu.ifpb.es.daw.util.JPAUtil;
@@ -11,19 +12,26 @@ public class MainAvaliacaoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try{
 
-        AvaliacaoDAO dao = new AvaliacaoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Avaliacao avaliacao = new Avaliacao();
+            AvaliacaoDAO dao = new AvaliacaoDAOImpl();
 
-        avaliacao.setNota(5);
-        avaliacao.setComentario("Muito bom!");
+            Avaliacao avaliacao = new Avaliacao();
 
-        dao.save(avaliacao);
+            avaliacao.setNota(5);
+            avaliacao.setComentario("Muito bom!");
 
-        em.close();
+            dao.save(avaliacao);
 
-        System.out.println("Avaliação salva com sucesso!");
+            System.out.println("Avaliação salva com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
     }
 }

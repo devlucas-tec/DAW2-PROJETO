@@ -6,7 +6,8 @@ import jakarta.persistence.EntityManager;
 
 public class CategoriaDAOImpl extends AbstractDAOImpl<Categoria> implements CategoriaDAO {
 
-    public CategoriaDAOImpl(EntityManager entityManager) {
-        super(entityManager);
+    public CategoriaDAOImpl() {
+
+        super(Categoria.class);
     }
 }
