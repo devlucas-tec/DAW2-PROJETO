@@ -1,23 +1,27 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.PedidoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.PedidoDAOImpl;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class MainPedidoDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        PedidoDAO dao = new PedidoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            PedidoDAO dao = new PedidoDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todos os pedidos foram removidos!");
+            System.out.println("Todos os pedidos foram removidos!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

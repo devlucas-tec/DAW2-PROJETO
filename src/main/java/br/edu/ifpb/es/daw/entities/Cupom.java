@@ -6,13 +6,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+
 @Entity
 @Table(name = "cupom")
 public class Cupom {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_cupom")
     private Long id;
 
     @Column(length = 20, unique = true, nullable = false)

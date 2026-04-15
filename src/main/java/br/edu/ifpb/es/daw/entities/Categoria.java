@@ -10,7 +10,6 @@ public class Categoria {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_categoria")
     private Long id;
 
     @Column(length = 50, unique = true, nullable = false)

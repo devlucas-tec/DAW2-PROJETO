@@ -1,33 +1,38 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.EnderecoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.EnderecoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Endereco;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 public class MainEnderecoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        EnderecoDAO dao = new EnderecoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Endereco endereco = new Endereco();
+            EnderecoDAO dao = new EnderecoDAOImpl();
 
-        endereco.setRua("Rua das Flores");
-        endereco.setNumero("123");
-        endereco.setComplemento("Apto 101");
-        endereco.setCep("58000000");
-        endereco.setCidade("João Pessoa");
-        endereco.setEstado("PB");
+            Endereco endereco = new Endereco();
 
-        dao.save(endereco);
+            endereco.setRua("Rua das Flores");
+            endereco.setNumero("123");
+            endereco.setComplemento("Apto 101");
+            endereco.setCep("58000000");
+            endereco.setCidade("João Pessoa");
+            endereco.setEstado("PB");
 
-        em.close();
+            dao.save(endereco);
 
-        System.out.println("Endereço salvo com sucesso!");
+            System.out.println("Endereço salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
     }
 }

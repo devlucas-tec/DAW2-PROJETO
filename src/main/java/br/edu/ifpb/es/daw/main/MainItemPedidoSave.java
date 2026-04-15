@@ -1,10 +1,9 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.ItemPedidoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ItemPedidoDAOImpl;
 import br.edu.ifpb.es.daw.entities.ItemPedido;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 
@@ -12,20 +11,26 @@ public class MainItemPedidoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        ItemPedidoDAO dao = new ItemPedidoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        ItemPedido itemPedido = new ItemPedido();
+            ItemPedidoDAO dao = new ItemPedidoDAOImpl();
 
-        itemPedido.setPrecoUnitario(BigDecimal.valueOf(50.50));
+            ItemPedido itemPedido = new ItemPedido();
 
-        itemPedido.setQuantidade(30);
+            itemPedido.setPrecoUnitario(BigDecimal.valueOf(50.50));
 
-        dao.save(itemPedido);
+            itemPedido.setQuantidade(30);
 
-        em.close();
+            dao.save(itemPedido);
 
-        System.out.println("Item pedido salvo com sucesso");
+            System.out.println("Item pedido salvo com sucesso");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

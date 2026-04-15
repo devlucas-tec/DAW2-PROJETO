@@ -10,7 +10,6 @@ public class Endereco {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_endereco")
     private Long id;
 
     @Column(length = 100, nullable = false)

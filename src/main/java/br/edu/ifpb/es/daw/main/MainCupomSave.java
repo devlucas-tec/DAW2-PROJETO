@@ -1,12 +1,10 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.CupomDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.CupomDAOImpl;
 import br.edu.ifpb.es.daw.entities.Cupom;
 import br.edu.ifpb.es.daw.entities.StatusCupom;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,22 +13,28 @@ public class MainCupomSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        CupomDAO dao = new CupomDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Cupom cupom = new Cupom();
+            CupomDAO dao = new CupomDAOImpl();
 
-        cupom.setCodigo("C" + (System.nanoTime() % 1000000000));
+            Cupom cupom = new Cupom();
 
-        cupom.setValorDesconto(new BigDecimal("50.00"));
-        cupom.setDataExpiracao(LocalDate.now().plusDays(30));
-        cupom.setStatus(StatusCupom.ATIVO);
+            cupom.setCodigo("C" + (System.nanoTime() % 1000000000));
 
-        dao.save(cupom);
+            cupom.setValorDesconto(new BigDecimal("50.00"));
+            cupom.setDataExpiracao(LocalDate.now().plusDays(30));
+            cupom.setStatus(StatusCupom.ATIVO);
 
-        em.close();
+            dao.save(cupom);
 
-        System.out.println("Cupom salvo com sucesso!");
+            System.out.println("Cupom salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

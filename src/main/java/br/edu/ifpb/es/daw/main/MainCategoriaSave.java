@@ -1,30 +1,36 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.CategoriaDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.CategoriaDAOImpl;
 import br.edu.ifpb.es.daw.entities.Categoria;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class MainCategoriaSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        CategoriaDAO dao = new CategoriaDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Categoria categoria = new Categoria();
+            CategoriaDAO dao = new CategoriaDAOImpl();
 
-        categoria.setNome("Categoria_" + System.nanoTime());
+            Categoria categoria = new Categoria();
 
-        categoria.setDescricao("Descrição de teste");
+            categoria.setNome("Categoria_" + System.nanoTime());
 
-        dao.save(categoria);
+            categoria.setDescricao("Descrição de teste");
 
-        em.close();
+            dao.save(categoria);
 
-        System.out.println("Categoria salva com sucesso!");
+            System.out.println("Categoria salva com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
+
     }
 }

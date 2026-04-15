@@ -101,4 +101,10 @@ public abstract class AbstractDAOImpl<T> implements DAO<T> {
 			}
 		}
 	}
+
+    public static void closeFactory() {
+        if (emf != null && emf.isOpen()) {
+            emf.close();
+        }
+    }
 }

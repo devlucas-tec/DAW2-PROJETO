@@ -1,23 +1,29 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.CategoriaDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.CategoriaDAOImpl;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class MainCategoriaDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        CategoriaDAO dao = new CategoriaDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            CategoriaDAO dao = new CategoriaDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todas as categorias foram removidas!");
+            System.out.println("Todas as categorias foram removidas!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
+
     }
 }

@@ -1,22 +1,27 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.CarrinhoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.CarrinhoDAOImpl;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
+
 
 public class MainCarrinhoDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            AbstractDAOImpl.initialize("daw");
 
-        CarrinhoDAO dao = new CarrinhoDAOImpl(em);
+            CarrinhoDAO dao = new CarrinhoDAOImpl();
 
-        dao.deleteAll();
+            dao.deleteAll();
 
-        em.close();
+            System.out.println("Todos os carrinhos foram apagados!");
 
-        System.out.println("Todos os carrinhos foram apagados!");
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

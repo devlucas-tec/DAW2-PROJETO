@@ -1,23 +1,27 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.ProdutoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ProdutoDAOImpl;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 public class MainProdutoDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        ProdutoDAO dao = new ProdutoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            ProdutoDAO dao = new ProdutoDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todos os produtos foram removidos!");
+            System.out.println("Todos os produtos foram removidos!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }
