@@ -1,12 +1,10 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.EntregaDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.EntregaDAOImpl;
 import br.edu.ifpb.es.daw.entities.Entrega;
 import br.edu.ifpb.es.daw.entities.StatusEntrega;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 
@@ -14,25 +12,31 @@ public class MainEntregaSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        EntregaDAO dao = new EntregaDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Entrega entrega = new Entrega();
+            EntregaDAO dao = new EntregaDAOImpl();
 
-        entrega.setTransportadora("Correios");
+            Entrega entrega = new Entrega();
 
-        entrega.setCodigoRastreamento("BR" + System.nanoTime());
+            entrega.setTransportadora("Correios");
 
-        entrega.setStatusEntrega(StatusEntrega.SAIU_PARA_ENTREGA);
+            entrega.setCodigoRastreamento("BR" + System.nanoTime());
 
-        entrega.setDataEnvio(LocalDateTime.now());
-        entrega.setDataEntregaPrevista(LocalDateTime.now().plusDays(7));
+            entrega.setStatusEntrega(StatusEntrega.SAIU_PARA_ENTREGA);
 
-        dao.save(entrega);
+            entrega.setDataEnvio(LocalDateTime.now());
+            entrega.setDataEntregaPrevista(LocalDateTime.now().plusDays(7));
 
-        em.close();
+            dao.save(entrega);
 
-        System.out.println("Entrega salva com sucesso!");
+            System.out.println("Entrega salva com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

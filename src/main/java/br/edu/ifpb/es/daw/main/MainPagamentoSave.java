@@ -1,13 +1,11 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.PagamentoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.PagamentoDAOImpl;
 import br.edu.ifpb.es.daw.entities.MetodoPagamento;
 import br.edu.ifpb.es.daw.entities.Pagamento;
-
 import br.edu.ifpb.es.daw.entities.StatusPagamento;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 
@@ -15,20 +13,26 @@ public class MainPagamentoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        PagamentoDAO dao = new PagamentoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Pagamento pagamento = new Pagamento();
+            PagamentoDAO dao = new PagamentoDAOImpl();
 
-        pagamento.setMetodo(MetodoPagamento.PIX);
-        pagamento.setStatus(StatusPagamento.APROVADO);
-        pagamento.setValorPago(new BigDecimal("250.00"));
+            Pagamento pagamento = new Pagamento();
 
-        dao.save(pagamento);
+            pagamento.setMetodo(MetodoPagamento.PIX);
+            pagamento.setStatus(StatusPagamento.APROVADO);
+            pagamento.setValorPago(new BigDecimal("250.00"));
 
-        em.close();
+            dao.save(pagamento);
 
-        System.out.println("Pagamento salvo com sucesso!");
+            System.out.println("Pagamento salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

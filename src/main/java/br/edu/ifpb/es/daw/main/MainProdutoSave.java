@@ -1,11 +1,9 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.ProdutoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ProdutoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Produto;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 
@@ -13,21 +11,27 @@ public class MainProdutoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        ProdutoDAO dao = new ProdutoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Produto produto = new Produto();
+            ProdutoDAO dao = new ProdutoDAOImpl();
 
-        produto.setNome("Notebook");
-        produto.setDescricao("Notebook Dell i7");
-        produto.setEstoque(10);
-        produto.setPreco(new BigDecimal("3500.00"));
+            Produto produto = new Produto();
 
-        dao.save(produto);
+            produto.setNome("Notebook");
+            produto.setDescricao("Notebook Dell i7");
+            produto.setEstoque(10);
+            produto.setPreco(new BigDecimal("3500.00"));
 
-        em.close();
+            dao.save(produto);
 
-        System.out.println("Produto salvo com sucesso!");
+            System.out.println("Produto salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

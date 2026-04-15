@@ -1,30 +1,36 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.ItemCarrinhoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ItemCarrinhoDAOImpl;
 import br.edu.ifpb.es.daw.entities.ItemCarrinho;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 
 public class MainItemCarrinhoSave {
 
     public static void main(String[] args) {
-        EntityManager em = JPAUtil.getEntityManager();
 
-        ItemCarrinhoDAO dao = new ItemCarrinhoDAOImpl(em);
+        try {
 
-        ItemCarrinho itemCarrinho = new ItemCarrinho();
+            AbstractDAOImpl.initialize("daw");
 
-        itemCarrinho.setPrecoUnitario(BigDecimal.valueOf(100.25));
+            ItemCarrinhoDAO dao = new ItemCarrinhoDAOImpl();
 
-        itemCarrinho.setQuantidade(50);
+            ItemCarrinho itemCarrinho = new ItemCarrinho();
 
-        dao.save(itemCarrinho);
+            itemCarrinho.setPrecoUnitario(BigDecimal.valueOf(100.25));
 
-        em.close();
+            itemCarrinho.setQuantidade(50);
 
-        System.out.println("Item do carrinho salvo");
+            dao.save(itemCarrinho);
+
+            System.out.println("Item do carrinho salvo");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

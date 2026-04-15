@@ -11,7 +11,6 @@ public class Entrega {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_entrega")
     private Long id;
 
     @Column(length = 50)

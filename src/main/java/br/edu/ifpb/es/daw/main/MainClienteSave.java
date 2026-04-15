@@ -1,33 +1,38 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.ClienteDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ClienteDAOImpl;
 import br.edu.ifpb.es.daw.entities.Cliente;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-
-import jakarta.persistence.EntityManager;
 
 public class MainClienteSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        ClienteDAO dao = new ClienteDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Cliente cliente = new Cliente();
+            ClienteDAO dao = new ClienteDAOImpl();
 
-        cliente.setNome("João da Silva");
+            Cliente cliente = new Cliente();
 
-        cliente.setEmail("joao" + System.nanoTime() + "@gmail.com");
+            cliente.setNome("João da Silva");
 
-        cliente.setSenha("123456");
-        cliente.setTelefone("83999999999");
+            cliente.setEmail("joao" + System.nanoTime() + "@gmail.com");
 
-        dao.save(cliente);
+            cliente.setSenha("123456");
+            cliente.setTelefone("83999999999");
 
-        em.close();
+            dao.save(cliente);
 
-        System.out.println("Cliente salvo com sucesso!");
+            System.out.println("Cliente salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
+
     }
 }

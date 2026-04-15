@@ -12,7 +12,6 @@ public class Cupom {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_cupom")
     private Long id;
 
     @Column(length = 20, unique = true, nullable = false)

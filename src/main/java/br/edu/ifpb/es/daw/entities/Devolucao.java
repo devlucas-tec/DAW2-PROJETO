@@ -11,7 +11,6 @@ public class Devolucao {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_devolucao")
     private Long id;
 
     @Column(name = "data_devolucao", insertable = false, updatable = false)

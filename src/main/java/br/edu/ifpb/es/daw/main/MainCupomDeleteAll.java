@@ -1,23 +1,27 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.CupomDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.CupomDAOImpl;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 public class MainCupomDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        CupomDAO dao = new CupomDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            CupomDAO dao = new CupomDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todos os cupons foram removidos!");
+            System.out.println("Todos os cupons foram removidos!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

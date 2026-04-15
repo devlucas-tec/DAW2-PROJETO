@@ -1,23 +1,27 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.DevolucaoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.DevolucaoDAOImpl;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 public class MainDevolucaoDeleteAll {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        DevolucaoDAO dao = new DevolucaoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        dao.deleteAll();
+            DevolucaoDAO dao = new DevolucaoDAOImpl();
 
-        em.close();
+            dao.deleteAll();
 
-        System.out.println("Todas as devoluções foram removidas!");
+            System.out.println("Todas as devoluções foram removidas!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

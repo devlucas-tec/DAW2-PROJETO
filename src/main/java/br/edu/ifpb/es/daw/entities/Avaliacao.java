@@ -11,7 +11,6 @@ public class Avaliacao {
 
     @Id
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_avaliacao")
     private Long id;
 
     @Column(nullable = false)

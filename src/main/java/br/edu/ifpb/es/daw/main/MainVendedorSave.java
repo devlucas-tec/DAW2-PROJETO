@@ -1,30 +1,34 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.VendedorDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.VendedorDAOImpl;
 import br.edu.ifpb.es.daw.entities.Vendedor;
-
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
 
 public class MainVendedorSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        VendedorDAO dao = new VendedorDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Vendedor vendedor = new Vendedor();
+            VendedorDAO dao = new VendedorDAOImpl();
 
-        vendedor.setRazaoSocial("Empresa Teste");
+            Vendedor vendedor = new Vendedor();
 
-        vendedor.setCnpjCpf("V" + (System.nanoTime() % 1000000000));
+            vendedor.setRazaoSocial("Empresa Teste");
 
-        dao.save(vendedor);
+            vendedor.setCnpjCpf("V" + (System.nanoTime() % 1000000000));
 
-        em.close();
+            dao.save(vendedor);
 
-        System.out.println("Vendedor salvo com sucesso!");
+            System.out.println("Vendedor salvo com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }

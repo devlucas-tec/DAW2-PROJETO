@@ -1,32 +1,34 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.DevolucaoDAO;
+import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.DevolucaoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Devolucao;
-
 import br.edu.ifpb.es.daw.entities.StatusDevolucao;
-import br.edu.ifpb.es.daw.util.JPAUtil;
-import jakarta.persistence.EntityManager;
-
-import java.math.BigDecimal;
 
 public class MainDevolucaoSave {
 
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        try {
 
-        DevolucaoDAO dao = new DevolucaoDAOImpl(em);
+            AbstractDAOImpl.initialize("daw");
 
-        Devolucao devolucao = new Devolucao();
+            DevolucaoDAO dao = new DevolucaoDAOImpl();
 
-        devolucao.setMotivo("Produto com defeito");
-        devolucao.setStatus(StatusDevolucao.APROVADA);
+            Devolucao devolucao = new Devolucao();
 
-        dao.save(devolucao);
+            devolucao.setMotivo("Produto com defeito");
+            devolucao.setStatus(StatusDevolucao.APROVADA);
 
-        em.close();
+            dao.save(devolucao);
 
-        System.out.println("Devolução salva com sucesso!");
+            System.out.println("Devolução salva com sucesso!");
+
+        } finally {
+
+            AbstractDAOImpl.closeFactory();
+
+        }
     }
 }
