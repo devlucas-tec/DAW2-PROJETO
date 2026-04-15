@@ -29,6 +29,17 @@ public class Entrega {
     @Column(name = "data_entrega_prevista")
     private LocalDateTime dataEntregaPrevista;
 
+    @PrePersist
+    protected void onCreate() {
+        this.dataEnvio = LocalDateTime.now();
+        this.dataEntregaPrevista = LocalDateTime.now().plusDays(7);
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.dataEntregaPrevista = LocalDateTime.now().plusDays(7);
+    }
+
     public Entrega() {
     }
 

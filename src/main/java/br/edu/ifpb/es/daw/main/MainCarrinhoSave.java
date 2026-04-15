@@ -6,8 +6,6 @@ import br.edu.ifpb.es.daw.dao.impl.CarrinhoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Carrinho;
 
 
-
-
 public class MainCarrinhoSave {
 
     public static void main(String[] args) {

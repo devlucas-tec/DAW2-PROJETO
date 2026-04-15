@@ -13,7 +13,7 @@ public class Devolucao {
     @GeneratedValue( strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(name = "data_devolucao", insertable = false, updatable = false)
+    @Column(name = "data_devolucao", nullable = false ,updatable = false)
     private LocalDateTime dataDevolucao;
 
     @Column(nullable = false, length = 1000)
