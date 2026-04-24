@@ -23,7 +23,7 @@ public class Carrinho {
 
     // Vínculo com Cliente (Um cliente tem um carrinho)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
     // Itens do Carrinho
