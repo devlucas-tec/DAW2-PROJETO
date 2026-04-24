@@ -1,16 +1,15 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "avaliacao")
 public class Avaliacao {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(nullable = false)
@@ -22,6 +21,15 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", nullable = false)
     private LocalDateTime dataAvaliacao;
 
+    // Relacionamentos Adicionados
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produto_id", nullable = false)
+    private Produto produto;
+
     @PrePersist
     protected void onCreate() {
         this.dataAvaliacao = LocalDateTime.now();
@@ -30,6 +38,7 @@ public class Avaliacao {
     public Avaliacao() {
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -62,8 +71,25 @@ public class Avaliacao {
         this.dataAvaliacao = dataAvaliacao;
     }
 
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public Produto getProduto() {
+        return produto;
+    }
+
+    public void setProduto(Produto produto) {
+        this.produto = produto;
+    }
+
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Avaliacao avaliacao = (Avaliacao) o;
         return Objects.equals(id, avaliacao.id);
@@ -71,7 +97,7 @@ public class Avaliacao {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hash(id);
     }
 
     @Override
@@ -83,5 +109,4 @@ public class Avaliacao {
                 ", dataAvaliacao=" + dataAvaliacao +
                 '}';
     }
-
 }
