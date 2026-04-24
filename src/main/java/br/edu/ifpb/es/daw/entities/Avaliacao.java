@@ -22,6 +22,14 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", nullable = false)
     private LocalDateTime dataAvaliacao;
 
+    @ManyToOne
+    @JoinColumn(name = "id_cliente", nullable = false)
+    private Cliente cliente;
+
+    @ManyToOne
+    @JoinColumn(name = "id_produto", nullable = false)
+    private Produto produto;
+
     @PrePersist
     protected void onCreate() {
         this.dataAvaliacao = LocalDateTime.now();
@@ -30,6 +38,7 @@ public class Avaliacao {
     public Avaliacao() {
     }
 
+    // getters e setters antes do relacionamento
     public Long getId() {
         return id;
     }
@@ -60,6 +69,23 @@ public class Avaliacao {
 
     public void setDataAvaliacao(LocalDateTime dataAvaliacao) {
         this.dataAvaliacao = dataAvaliacao;
+    }
+
+    // getters e setters do relacionamento
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public Produto getProduto() {
+        return produto;
+    }
+
+    public void setProduto(Produto produto) {
+        this.produto = produto;
     }
 
     @Override

@@ -66,15 +66,13 @@ public class Carrinho {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dataCriacao, dataAtualizacao);
+        return Objects.hashCode(id);
     }
 
     @Override
     public String toString() {
         return "Carrinho{" +
                 "id=" + id +
-                ", dataCriacao=" + dataCriacao +
-                ", dataAtualizacao=" + dataAtualizacao +
                 '}';
     }
 }

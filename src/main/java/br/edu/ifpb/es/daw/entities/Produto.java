@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -33,6 +35,10 @@ public class Produto {
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
 
+    //Lista todas as avaliações do produto
+    @OneToMany(mappedBy = "produto")
+    private List<Avaliacao> avaliacoes = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();
@@ -47,6 +53,7 @@ public class Produto {
     public Produto() {
     }
 
+    //getters e setters antes do relacionamento
     public Long getId() {
         return id;
     }
@@ -101,6 +108,15 @@ public class Produto {
 
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    // getter e setter do relacionameto
+    public List<Avaliacao> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<Avaliacao> avaliacoes) {
+        this.avaliacoes = avaliacoes;
     }
 
     @Override

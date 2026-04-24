@@ -3,6 +3,8 @@ package br.edu.ifpb.es.daw.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -31,6 +33,10 @@ public class Cliente {
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
 
+    // Lista todas as avaliações que o cliente fez
+    @OneToMany(mappedBy = "cliente")
+    private List<Avaliacao> avaliacoes = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();
@@ -46,6 +52,7 @@ public class Cliente {
     public Cliente() {
     }
 
+    // getters e setters antes do relacionamento
     public Long getId() {
         return id;
     }
@@ -100,6 +107,15 @@ public class Cliente {
 
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    // getters e setters do relacionamento
+    public List<Avaliacao> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<Avaliacao> avaliacoes) {
+        this.avaliacoes = avaliacoes;
     }
 
     @Override
