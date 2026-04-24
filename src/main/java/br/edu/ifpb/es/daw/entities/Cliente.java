@@ -3,6 +3,8 @@ package br.edu.ifpb.es.daw.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -123,5 +125,9 @@ public class Cliente {
                 ", dataCadastro=" + dataCadastro +
                 '}';
     }
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Pedido> pedidos = new ArrayList<>();
 
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private Carrinho carrinho;
 }
