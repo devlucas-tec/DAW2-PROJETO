@@ -3,6 +3,8 @@ package br.edu.ifpb.es.daw.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -19,6 +21,18 @@ public class Carrinho {
     @Column(name = "data_ultima_atualizacao", nullable = false)
     private LocalDate dataAtualizacao;
 
+    // Vínculo com Cliente (Um cliente tem um carrinho)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
+    // Itens do Carrinho
+    @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemCarrinho> itens = new ArrayList<>();
+
+    public Carrinho() {
+    }
+
     @PrePersist
     protected void onCreate() {
         this.dataCriacao = LocalDate.now();
@@ -26,42 +40,32 @@ public class Carrinho {
     }
 
     @PreUpdate
-    protected void ondUpdate() {
+    protected void onUpdate() {
         this.dataAtualizacao = LocalDate.now();
     }
 
-    public Carrinho() {
-    }
+    // Getters e Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public LocalDate getDataCriacao() { return dataCriacao; }
+    public void setDataCriacao(LocalDate dataCriacao) { this.dataCriacao = dataCriacao; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public LocalDate getDataAtualizacao() { return dataAtualizacao; }
+    public void setDataAtualizacao(LocalDate dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
 
-    public LocalDate getDataCriacao() {
-        return dataCriacao;
-    }
+    public Cliente getCliente() { return cliente; }
+    public void setCliente(Cliente cliente) { this.cliente = cliente; }
 
-    public void setDataCriacao(LocalDate dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
-    public LocalDate getDataAtualizacao() {
-        return dataAtualizacao;
-    }
-
-    public void setDataAtualizacao(LocalDate dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
+    public List<ItemCarrinho> getItens() { return itens; }
+    public void setItens(List<ItemCarrinho> itens) { this.itens = itens; }
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Carrinho carrinho = (Carrinho) o;
-        return Objects.equals(id, carrinho.id) && Objects.equals(dataCriacao, carrinho.dataCriacao) && Objects.equals(dataAtualizacao, carrinho.dataAtualizacao);
+        return Objects.equals(id, carrinho.id);
     }
 
     @Override

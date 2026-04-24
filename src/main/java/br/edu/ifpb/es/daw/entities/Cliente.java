@@ -139,5 +139,9 @@ public class Cliente {
                 ", dataCadastro=" + dataCadastro +
                 '}';
     }
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Pedido> pedidos = new ArrayList<>();
 
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private Carrinho carrinho;
 }

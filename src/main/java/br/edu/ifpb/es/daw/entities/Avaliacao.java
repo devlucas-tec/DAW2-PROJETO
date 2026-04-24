@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "avaliacao")
 public class Avaliacao {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(nullable = false)
@@ -22,11 +22,12 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", nullable = false)
     private LocalDateTime dataAvaliacao;
 
-    @ManyToOne
+    // Relacionamentos Adicionados
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_produto", nullable = false)
     private Produto produto;
 
@@ -38,7 +39,7 @@ public class Avaliacao {
     public Avaliacao() {
     }
 
-    // getters e setters antes do relacionamento
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -90,6 +91,7 @@ public class Avaliacao {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Avaliacao avaliacao = (Avaliacao) o;
         return Objects.equals(id, avaliacao.id);
