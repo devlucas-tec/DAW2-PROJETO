@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Carrinho {
 
     // Vínculo com Cliente (Um cliente tem um carrinho)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
     // Itens do Carrinho
@@ -68,5 +69,14 @@ public class Carrinho {
     }
 
     @Override
-    public int hashCode() { return Objects.hash(id); }
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Carrinho{" +
+                "id=" + id +
+                '}';
+    }
 }

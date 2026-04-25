@@ -28,7 +28,7 @@ public class Pedido {
 
     // Relacionamento com Cliente
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
     // Relacionamento bidirecional com os itens

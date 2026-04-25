@@ -1,7 +1,6 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -10,10 +9,10 @@ import java.util.Objects;
 public class Devolucao {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(name = "data_devolucao", nullable = false ,updatable = false)
+    @Column(name = "data_devolucao", nullable = false, updatable = false)
     private LocalDateTime dataDevolucao;
 
     @Column(nullable = false, length = 1000)
@@ -22,6 +21,10 @@ public class Devolucao {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private StatusDevolucao status = StatusDevolucao.APROVADA;
+
+    @ManyToOne
+    @JoinColumn(name = "id_pedido")
+    private Pedido pedido;
 
     public Devolucao() {
     }
@@ -63,6 +66,14 @@ public class Devolucao {
         this.status = status;
     }
 
+    public Pedido getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -82,5 +93,4 @@ public class Devolucao {
                 ", status='" + status + '\'' +
                 '}';
     }
-
 }

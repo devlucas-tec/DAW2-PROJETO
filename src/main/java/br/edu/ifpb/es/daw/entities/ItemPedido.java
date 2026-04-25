@@ -12,13 +12,13 @@ public class ItemPedido {
     private ItemPedidoId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("pedidoId") // Nome do atributo dentro de ItemPedidoId
-    @JoinColumn(name = "pedido_id")
+    @MapsId("idPedido") // Nome do atributo dentro de ItemPedidoId
+    @JoinColumn(name = "id_pedido")
     private Pedido pedido;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("produtoId") // Nome do atributo dentro de ItemPedidoId
-    @JoinColumn(name = "produto_id")
+    @MapsId("idProduto") // Nome do atributo dentro de ItemPedidoId
+    @JoinColumn(name = "id_produto")
     private Produto produto;
 
     @Column(nullable = false)

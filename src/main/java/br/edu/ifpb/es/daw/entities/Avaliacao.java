@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -23,11 +24,11 @@ public class Avaliacao {
 
     // Relacionamentos Adicionados
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produto_id", nullable = false)
+    @JoinColumn(name = "id_produto", nullable = false)
     private Produto produto;
 
     @PrePersist
@@ -71,6 +72,7 @@ public class Avaliacao {
         this.dataAvaliacao = dataAvaliacao;
     }
 
+    // getters e setters do relacionamento
     public Cliente getCliente() {
         return cliente;
     }
@@ -97,7 +99,7 @@ public class Avaliacao {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hashCode(id);
     }
 
     @Override
@@ -109,4 +111,5 @@ public class Avaliacao {
                 ", dataAvaliacao=" + dataAvaliacao +
                 '}';
     }
+
 }
