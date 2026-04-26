@@ -27,10 +27,20 @@ public class MainCarrinhoSave {
 
             Cliente cliente = clientes.isEmpty() ? null : clientes.get(0);
 
-            System.out.println("ID do Cliente encontrado: " + (cliente != null ? cliente.getId() : "NULL"));
-
             if (cliente == null) {
                 System.out.println("❌ Não há clientes no banco!");
+                return;
+            }
+
+            System.out.println("ID do Cliente encontrado: " + cliente.getId());
+
+            // Verifica se o cliente já possui carrinho
+            List<Carrinho> carrinhos = carrinhoDAO.findAll();
+            boolean jaTemCarrinho = carrinhos.stream()
+                    .anyMatch(c -> c.getCliente().getId().equals(cliente.getId()));
+
+            if (jaTemCarrinho) {
+                System.out.println("⚠️ Cliente já possui um carrinho! Nenhum carrinho criado.");
                 return;
             }
 

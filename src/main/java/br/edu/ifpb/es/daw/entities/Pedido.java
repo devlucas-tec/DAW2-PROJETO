@@ -35,6 +35,11 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
 
+    // Relacionamento com Cupom
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_cupom") // Um Pedido NÃO precisa obrigatoriamente de um Cupom
+    private Cupom cupom;
+
     public Pedido() {
     }
 
@@ -61,6 +66,10 @@ public class Pedido {
 
     public List<ItemPedido> getItens() { return itens; }
     public void setItens(List<ItemPedido> itens) { this.itens = itens; }
+
+    public Cupom getCupom() { return cupom; }
+    public void setCupom(Cupom cupom) { this.cupom = cupom; }
+
 
     @Override
     public boolean equals(Object o) {
