@@ -52,5 +52,6 @@ public class ItemPedidoId implements Serializable {
     }
 
     public void setIdProduto(Long id) {
+
     }
 }
