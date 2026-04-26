@@ -1,8 +1,13 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -28,12 +33,12 @@ public class Produto {
 
     // Vínculo com o Vendedor
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendedor_id", nullable = false)
+    @JoinColumn(name = "id_vendedor", nullable = false)
     private Vendedor vendedor;
 
     // Vínculo com a Categoria
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", nullable = false)
+    @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
@@ -41,6 +46,10 @@ public class Produto {
 
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
+
+    //Lista todas as avaliações do produto
+    @OneToMany(mappedBy = "produto")
+    private List<Avaliacao> avaliacoes = new ArrayList<>();
 
     public Produto() {
     }
@@ -72,6 +81,15 @@ public class Produto {
     public Categoria getCategoria() { return categoria; }
     public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 
+    // getter e setter do relacionameto
+    public List<Avaliacao> getAvaliacoes() {
+        return avaliacoes;
+    }
+
+    public void setAvaliacoes(List<Avaliacao> avaliacoes) {
+        this.avaliacoes = avaliacoes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -88,9 +106,11 @@ public class Produto {
         return "Produto{" + "id=" + id + ", nome='" + nome + '\'' + ", preco=" + preco + '}';
     }
 
-    public void setDescricao(String notebookDellI7) {
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
-    public void setEstoque(int i) {
+    public void setEstoque(int estoque) {
+        this.estoque = estoque;
     }
 }

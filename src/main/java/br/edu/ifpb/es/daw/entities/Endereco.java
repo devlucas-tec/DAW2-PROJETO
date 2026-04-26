@@ -1,7 +1,6 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.util.Objects;
 
 @Entity
@@ -9,7 +8,7 @@ import java.util.Objects;
 public class Endereco {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(length = 100, nullable = false)
@@ -29,6 +28,10 @@ public class Endereco {
 
     @Column(length = 2, nullable = false)
     private String estado;
+
+    @ManyToOne
+    @JoinColumn(name = "id_cliente")
+    private Cliente cliente;
 
     public Endereco() {
     }
@@ -89,6 +92,14 @@ public class Endereco {
         this.estado = estado;
     }
 
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -109,5 +120,4 @@ public class Endereco {
                 ", cidade='" + cidade + '\'' +
                 '}';
     }
-
 }

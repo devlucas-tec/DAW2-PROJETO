@@ -8,31 +8,31 @@ import java.util.Objects;
 @Embeddable
 public class ItemPedidoId implements Serializable {
 
-    private Long pedido;
+    private Long idPedido;
 
-    private Long produto;
+    private Long idProduto;
 
     public ItemPedidoId() {}
 
     public ItemPedidoId(Long pedido, Long produto) {
-        this.pedido = pedido;
-        this.produto = produto;
+        this.idPedido = pedido;
+        this.idProduto = produto;
     }
 
     public Long getPedido() {
-        return pedido;
+        return idPedido;
     }
 
     public void setPedido(Long pedido) {
-        this.pedido = pedido;
+        this.idPedido = pedido;
     }
 
     public Long getProduto() {
-        return produto;
+        return idProduto;
     }
 
     public void setProduto(Long produto) {
-        this.produto = produto;
+        this.idProduto = produto;
     }
 
     @Override
@@ -40,11 +40,17 @@ public class ItemPedidoId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ItemPedidoId that = (ItemPedidoId) o;
-        return Objects.equals(pedido, that.pedido) && Objects.equals(produto, that.produto);
+        return Objects.equals(idPedido, that.idPedido) && Objects.equals(idProduto, that.idProduto);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pedido, produto);
+        return Objects.hash(idPedido, idProduto);
+    }
+
+    public void setIdPedido(Long id) {
+    }
+
+    public void setIdProduto(Long id) {
     }
 }

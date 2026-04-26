@@ -1,7 +1,6 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -10,7 +9,7 @@ import java.util.Objects;
 public class Entrega {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(length = 50)
@@ -28,6 +27,10 @@ public class Entrega {
 
     @Column(name = "data_entrega_prevista")
     private LocalDateTime dataEntregaPrevista;
+
+    @OneToOne
+    @JoinColumn(name = "id_pedido")
+    private Pedido pedido;
 
     @PrePersist
     protected void onCreate() {
@@ -89,6 +92,14 @@ public class Entrega {
 
     public void setDataEntregaPrevista(LocalDateTime dataEntregaPrevista) {
         this.dataEntregaPrevista = dataEntregaPrevista;
+    }
+
+    public Pedido getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
     }
 
     @Override
