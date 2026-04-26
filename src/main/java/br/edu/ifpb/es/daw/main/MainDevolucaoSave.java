@@ -1,10 +1,15 @@
 package br.edu.ifpb.es.daw.main;
 
 import br.edu.ifpb.es.daw.dao.DevolucaoDAO;
+import br.edu.ifpb.es.daw.dao.PedidoDAO;
 import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.DevolucaoDAOImpl;
+import br.edu.ifpb.es.daw.dao.impl.PedidoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Devolucao;
+import br.edu.ifpb.es.daw.entities.Pedido;
 import br.edu.ifpb.es.daw.entities.StatusDevolucao;
+
+import java.util.List;
 
 public class MainDevolucaoSave {
 
@@ -14,16 +19,30 @@ public class MainDevolucaoSave {
 
             AbstractDAOImpl.initialize("daw");
 
-            DevolucaoDAO dao = new DevolucaoDAOImpl();
+            DevolucaoDAO devolucaoDAO = new DevolucaoDAOImpl();
+            PedidoDAO pedidoDAO = new PedidoDAOImpl();
+
+            List<Pedido> pedidos = pedidoDAO.findAll();
+
+            System.out.println("Pedidos no banco: " + pedidos.size());
+
+            Pedido pedido = pedidos.isEmpty() ? null : pedidos.get(0);
+
+            System.out.println("ID do Pedido encontrado: " + (pedido != null ? pedido.getId() : "NULL"));
+
+            if (pedido == null) {
+                System.out.println("❌ Não há pedidos no banco! Execute MainPedidoSave primeiro.");
+                return;
+            }
 
             Devolucao devolucao = new Devolucao();
-
             devolucao.setMotivo("Produto com defeito");
             devolucao.setStatus(StatusDevolucao.APROVADA);
+            devolucao.setPedido(pedido);
 
-            dao.save(devolucao);
+            devolucaoDAO.save(devolucao);
 
-            System.out.println("Devolução salva com sucesso!");
+            System.out.println("✅ Devolução salva com sucesso!");
 
         } finally {
 

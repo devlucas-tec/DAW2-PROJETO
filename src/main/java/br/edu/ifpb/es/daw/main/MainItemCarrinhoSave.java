@@ -30,31 +30,35 @@ public class MainItemCarrinhoSave {
             List<Carrinho> carrinhos = carrinhoDAO.findAll();
             List<Produto> produtos = produtoDAO.findAll();
 
-            System.out.println("Carrinhos no banco: " + carrinhos.size());
-            System.out.println("Produtos no banco: " + produtos.size());
-
             Carrinho carrinho = carrinhos.isEmpty() ? null : carrinhos.get(0);
             Produto produto = produtos.isEmpty() ? null : produtos.get(0);
-
-            System.out.println("ID do Carrinho encontrado: " + (carrinho != null ? carrinho.getId() : "NULL"));
-            System.out.println("ID do Produto encontrado: " + (produto != null ? produto.getId() : "NULL"));
 
             if (carrinho == null || produto == null) {
                 System.out.println("❌ Não há carrinhos ou produtos no banco!");
                 return;
             }
 
-            // Monta a chave composta
-            ItemCarrinhoId itemCarrinhoId = new ItemCarrinhoId();
-            itemCarrinhoId.setCarrinhoId(carrinho.getId());
-            itemCarrinhoId.setProdutoId(produto.getId());
+            System.out.println("ID do Carrinho encontrado: " + carrinho.getId());
+            System.out.println("ID do Produto encontrado: " + produto.getId());
+
+            // Verifica se o item já existe no carrinho
+            ItemCarrinho existente = itemCarrinhoDAO.findByCarrinhoAndProduto(carrinho.getId(), produto.getId());
+
+            if (existente != null) {
+                existente.setQuantidade(existente.getQuantidade() + 1);
+                itemCarrinhoDAO.update(existente);
+                System.out.println("⚠️ Item já existia no carrinho. Quantidade atualizada para: " + existente.getQuantidade());
+                return;
+            }
+
+            ItemCarrinhoId itemCarrinhoId = new ItemCarrinhoId(carrinho.getId(), produto.getId());
 
             ItemCarrinho itemCarrinho = new ItemCarrinho();
             itemCarrinho.setId(itemCarrinhoId);
             itemCarrinho.setCarrinho(carrinho);
             itemCarrinho.setProduto(produto);
             itemCarrinho.setPrecoUnitario(BigDecimal.valueOf(100.25));
-            itemCarrinho.setQuantidade(50);
+            itemCarrinho.setQuantidade(1);
 
             itemCarrinhoDAO.save(itemCarrinho);
 

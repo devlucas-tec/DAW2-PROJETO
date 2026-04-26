@@ -22,14 +22,13 @@ public class MainCupomSave {
             Cupom cupom = new Cupom();
 
             cupom.setCodigo("C" + (System.nanoTime() % 1000000000));
-
             cupom.setValorDesconto(new BigDecimal("50.00"));
             cupom.setDataExpiracao(LocalDate.now().plusDays(30));
             cupom.setStatus(StatusCupom.ATIVO);
 
             dao.save(cupom);
 
-            System.out.println("Cupom salvo com sucesso!");
+            System.out.println("✅ Cupom salvo com sucesso!");
 
         } finally {
 

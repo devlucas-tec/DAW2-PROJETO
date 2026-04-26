@@ -44,10 +44,18 @@ public class MainItemPedidoSave {
                 return;
             }
 
+            // Verifica se o item já existe no pedido
+            ItemPedido existente = itemPedidoDAO.findByPedidoAndProduto(pedido.getId(), produto.getId());
+
+            if (existente != null) {
+                existente.setQuantidade(existente.getQuantidade() + 1);
+                itemPedidoDAO.update(existente);
+                System.out.println("⚠️ Item já existia no pedido. Quantidade atualizada para: " + existente.getQuantidade());
+                return;
+            }
+
             // Monta a chave composta
-            ItemPedidoId itemPedidoId = new ItemPedidoId();
-            itemPedidoId.setIdPedido(pedido.getId());
-            itemPedidoId.setIdProduto(produto.getId());
+            ItemPedidoId itemPedidoId = new ItemPedidoId(pedido.getId(), produto.getId());
 
             ItemPedido itemPedido = new ItemPedido();
             itemPedido.setId(itemPedidoId);
