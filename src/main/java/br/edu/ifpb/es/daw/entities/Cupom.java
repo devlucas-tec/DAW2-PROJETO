@@ -1,18 +1,18 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
 
 @Entity
 @Table(name = "cupom")
 public class Cupom {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(length = 20, unique = true, nullable = false)
@@ -27,6 +27,9 @@ public class Cupom {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     private StatusCupom status = StatusCupom.ATIVO;
+
+    @OneToMany(mappedBy = "cupom")
+    private List<Pedido> pedidos = new ArrayList<>();
 
     public Cupom() {
     }
@@ -71,6 +74,14 @@ public class Cupom {
         this.status = status;
     }
 
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
+
+    public void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -92,5 +103,4 @@ public class Cupom {
                 ", status=" + status +
                 '}';
     }
-
 }

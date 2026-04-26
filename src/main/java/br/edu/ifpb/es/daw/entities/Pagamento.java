@@ -1,7 +1,6 @@
 package br.edu.ifpb.es.daw.entities;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -11,7 +10,7 @@ import java.util.Objects;
 public class Pagamento {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id_pagamento")
     private Long id;
 
@@ -28,6 +27,10 @@ public class Pagamento {
 
     @Column(name = "data_pagamento", nullable = false)
     private LocalDateTime dataPagamento;
+
+    @OneToOne
+    @JoinColumn(name = "id_pedido")
+    private Pedido pedido;
 
     @PrePersist
     protected void onCreate() {
@@ -75,6 +78,14 @@ public class Pagamento {
 
     public void setDataPagamento(LocalDateTime dataPagamento) {
         this.dataPagamento = dataPagamento;
+    }
+
+    public Pedido getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
     }
 
     @Override
