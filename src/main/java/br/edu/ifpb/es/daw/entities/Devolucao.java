@@ -22,7 +22,7 @@ public class Devolucao {
     @Column(name = "status", length = 20, nullable = false)
     private StatusDevolucao status = StatusDevolucao.APROVADA;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido")
     private Pedido pedido;
 
