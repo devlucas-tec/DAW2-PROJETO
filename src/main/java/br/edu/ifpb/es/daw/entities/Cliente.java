@@ -37,6 +37,14 @@ public class Cliente {
     @OneToMany(mappedBy = "cliente")
     private List<Avaliacao> avaliacoes = new ArrayList<>();
 
+    // Lista todos os pedidos do cliente
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Pedido> pedidos = new ArrayList<>();
+
+    // Carrinho do cliente
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private Carrinho carrinho;
+
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();
@@ -48,11 +56,9 @@ public class Cliente {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-
     public Cliente() {
     }
 
-    // getters e setters antes do relacionamento
     public Long getId() {
         return id;
     }
@@ -109,13 +115,28 @@ public class Cliente {
         this.dataAtualizacao = dataAtualizacao;
     }
 
-    // getters e setters do relacionamento
     public List<Avaliacao> getAvaliacoes() {
         return avaliacoes;
     }
 
     public void setAvaliacoes(List<Avaliacao> avaliacoes) {
         this.avaliacoes = avaliacoes;
+    }
+
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
+
+    public void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
+    }
+
+    public Carrinho getCarrinho() {
+        return carrinho;
+    }
+
+    public void setCarrinho(Carrinho carrinho) {
+        this.carrinho = carrinho;
     }
 
     @Override
@@ -139,9 +160,4 @@ public class Cliente {
                 ", dataCadastro=" + dataCadastro +
                 '}';
     }
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Pedido> pedidos = new ArrayList<>();
-
-    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private Carrinho carrinho;
 }
