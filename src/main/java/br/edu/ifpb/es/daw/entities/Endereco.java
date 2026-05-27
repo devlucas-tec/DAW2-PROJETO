@@ -29,7 +29,7 @@ public class Endereco {
     @Column(length = 2, nullable = false)
     private String estado;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente")
     private Cliente cliente;
 

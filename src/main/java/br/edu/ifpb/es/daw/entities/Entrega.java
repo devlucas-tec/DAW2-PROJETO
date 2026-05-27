@@ -28,7 +28,7 @@ public class Entrega {
     @Column(name = "data_entrega_prevista")
     private LocalDateTime dataEntregaPrevista;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido")
     private Pedido pedido;
 
