@@ -1,16 +1,18 @@
-package br.edu.ifpb.es.daw.main;
+package br.edu.ifpb.es.daw.main.save;
 
 import br.edu.ifpb.es.daw.dao.ClienteDAO;
-import br.edu.ifpb.es.daw.dao.EnderecoDAO;
+import br.edu.ifpb.es.daw.dao.PedidoDAO;
 import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.ClienteDAOImpl;
-import br.edu.ifpb.es.daw.dao.impl.EnderecoDAOImpl;
+import br.edu.ifpb.es.daw.dao.impl.PedidoDAOImpl;
 import br.edu.ifpb.es.daw.entities.Cliente;
-import br.edu.ifpb.es.daw.entities.Endereco;
+import br.edu.ifpb.es.daw.entities.Pedido;
+import br.edu.ifpb.es.daw.entities.StatusPedido;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-public class MainEnderecoSave {
+public class MainPedidoSave {
 
     public static void main(String[] args) {
 
@@ -18,7 +20,7 @@ public class MainEnderecoSave {
 
             AbstractDAOImpl.initialize("daw");
 
-            EnderecoDAO enderecoDAO = new EnderecoDAOImpl();
+            PedidoDAO pedidoDAO = new PedidoDAOImpl();
             ClienteDAO clienteDAO = new ClienteDAOImpl();
 
             List<Cliente> clientes = clienteDAO.findAll();
@@ -30,28 +32,23 @@ public class MainEnderecoSave {
             System.out.println("ID do Cliente encontrado: " + (cliente != null ? cliente.getId() : "NULL"));
 
             if (cliente == null) {
-                System.out.println("❌ Não há clientes no banco! Execute MainClienteSave primeiro.");
+                System.out.println("❌ Não há clientes no banco!");
                 return;
             }
 
-            Endereco endereco = new Endereco();
-            endereco.setRua("Rua das Flores");
-            endereco.setNumero("123");
-            endereco.setComplemento("Apto 101");
-            endereco.setCep("58000000");
-            endereco.setCidade("João Pessoa");
-            endereco.setEstado("PB");
-            endereco.setCliente(cliente);
+            Pedido pedido = new Pedido();
+            pedido.setCliente(cliente);
+            pedido.setValorTotal(new BigDecimal("500.00"));
+            pedido.setStatus(StatusPedido.CRIADO);
 
-            enderecoDAO.save(endereco);
+            pedidoDAO.save(pedido);
 
-            System.out.println("✅ Endereço salvo com sucesso!");
+            System.out.println("✅ Pedido salvo com sucesso!");
 
         } finally {
 
             AbstractDAOImpl.closeFactory();
 
         }
-
     }
 }

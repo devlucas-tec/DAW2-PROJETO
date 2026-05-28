@@ -1,19 +1,17 @@
-package br.edu.ifpb.es.daw.main;
+package br.edu.ifpb.es.daw.main.save;
 
-import br.edu.ifpb.es.daw.dao.PagamentoDAO;
+import br.edu.ifpb.es.daw.dao.DevolucaoDAO;
 import br.edu.ifpb.es.daw.dao.PedidoDAO;
 import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
-import br.edu.ifpb.es.daw.dao.impl.PagamentoDAOImpl;
+import br.edu.ifpb.es.daw.dao.impl.DevolucaoDAOImpl;
 import br.edu.ifpb.es.daw.dao.impl.PedidoDAOImpl;
-import br.edu.ifpb.es.daw.entities.MetodoPagamento;
-import br.edu.ifpb.es.daw.entities.Pagamento;
+import br.edu.ifpb.es.daw.entities.Devolucao;
 import br.edu.ifpb.es.daw.entities.Pedido;
-import br.edu.ifpb.es.daw.entities.StatusPagamento;
+import br.edu.ifpb.es.daw.entities.StatusDevolucao;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-public class MainPagamentoSave {
+public class MainDevolucaoSave {
 
     public static void main(String[] args) {
 
@@ -21,7 +19,7 @@ public class MainPagamentoSave {
 
             AbstractDAOImpl.initialize("daw");
 
-            PagamentoDAO pagamentoDAO = new PagamentoDAOImpl();
+            DevolucaoDAO devolucaoDAO = new DevolucaoDAOImpl();
             PedidoDAO pedidoDAO = new PedidoDAOImpl();
 
             List<Pedido> pedidos = pedidoDAO.findAll();
@@ -37,15 +35,14 @@ public class MainPagamentoSave {
                 return;
             }
 
-            Pagamento pagamento = new Pagamento();
-            pagamento.setMetodo(MetodoPagamento.PIX);
-            pagamento.setStatus(StatusPagamento.APROVADO);
-            pagamento.setValorPago(new BigDecimal("250.00"));
-            pagamento.setPedido(pedido);
+            Devolucao devolucao = new Devolucao();
+            devolucao.setMotivo("Produto com defeito");
+            devolucao.setStatus(StatusDevolucao.APROVADA);
+            devolucao.setPedido(pedido);
 
-            pagamentoDAO.save(pagamento);
+            devolucaoDAO.save(devolucao);
 
-            System.out.println("✅ Pagamento salvo com sucesso!");
+            System.out.println("✅ Devolução salva com sucesso!");
 
         } finally {
 
