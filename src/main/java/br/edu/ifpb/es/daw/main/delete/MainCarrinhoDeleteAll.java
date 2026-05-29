@@ -1,4 +1,4 @@
-package br.edu.ifpb.es.daw.main;
+package br.edu.ifpb.es.daw.main.delete;
 
 import br.edu.ifpb.es.daw.dao.CarrinhoDAO;
 import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;

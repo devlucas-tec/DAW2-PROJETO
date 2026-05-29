@@ -1,10 +1,10 @@
-package br.edu.ifpb.es.daw.main;
+package br.edu.ifpb.es.daw.main.delete;
 
-import br.edu.ifpb.es.daw.dao.PedidoDAO;
+import br.edu.ifpb.es.daw.dao.CupomDAO;
 import br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl;
-import br.edu.ifpb.es.daw.dao.impl.PedidoDAOImpl;
+import br.edu.ifpb.es.daw.dao.impl.CupomDAOImpl;
 
-public class MainPedidoDeleteAll {
+public class MainCupomDeleteAll {
 
     public static void main(String[] args) {
 
@@ -12,11 +12,11 @@ public class MainPedidoDeleteAll {
 
             AbstractDAOImpl.initialize("daw");
 
-            PedidoDAO dao = new PedidoDAOImpl();
+            CupomDAO dao = new CupomDAOImpl();
 
             dao.deleteAll();
 
-            System.out.println("Todos os pedidos foram removidos!");
+            System.out.println("Todos os cupons foram removidos!");
 
         } finally {
 
