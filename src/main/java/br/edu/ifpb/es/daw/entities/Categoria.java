@@ -9,14 +9,14 @@ import java.util.Objects;
 public class Categoria {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(length = 50, unique = true, nullable = false)
     private String nome;
 
     @Column(length = 350)
-    private String descricao; 
+    private String descricao;
 
     public Categoria() {
     }
@@ -49,19 +49,20 @@ public class Categoria {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Categoria categoria = (Categoria) o;
-        return Objects.equals(nome, categoria.nome);
+        return Objects.equals(id, categoria.id); // apenas o id
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(nome);
+        return Objects.hashCode(id); // apenas o id
     }
 
     @Override
     public String toString() {
         return "Categoria{" +
-                "nome='" + nome + '\'' +
-                ", id=" + id +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", descricao='" + descricao + '\'' +
                 '}';
     }
 }
