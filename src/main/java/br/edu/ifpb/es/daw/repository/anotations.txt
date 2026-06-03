@@ -1,2 +1,0 @@
-Tudo o que antes era DAO e tinha uma implementação DAOImpl,
-agora será representado aqui em repository
