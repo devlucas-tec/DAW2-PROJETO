@@ -31,6 +31,10 @@ public class CupomService {
         return repository.findById(id);
     }
 
+    public Optional<Cupom> buscarPorCodigo(String codigo) {
+        return repository.buscarPorCodigo(codigo);
+    }
+
     @Transactional
     public Cupom atualizar(Cupom obj) {
 

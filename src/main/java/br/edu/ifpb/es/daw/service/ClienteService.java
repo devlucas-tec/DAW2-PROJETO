@@ -31,6 +31,10 @@ public class ClienteService {
         return repository.findById(id);
     }
 
+    public Optional<Cliente> buscarPorEmail(String email) {
+        return repository.buscarPorEmail(email);
+    }
+
     @Transactional
     public Cliente atualizar(Cliente obj) {
 
