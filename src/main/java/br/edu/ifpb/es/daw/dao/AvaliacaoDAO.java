@@ -1,7 +1,7 @@
 package br.edu.ifpb.es.daw.dao;
 
-import br.edu.ifpb.es.daw.entities.Avaliacao;
-import br.edu.ifpb.es.daw.entities.Produto;
+import br.edu.ifpb.es.daw.model.Avaliacao;
+import br.edu.ifpb.es.daw.model.Produto;
 
 public interface AvaliacaoDAO extends DAO<Avaliacao> {
 

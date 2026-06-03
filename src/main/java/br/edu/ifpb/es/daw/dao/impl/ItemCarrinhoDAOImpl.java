@@ -1,8 +1,8 @@
 package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.ItemCarrinhoDAO;
-import br.edu.ifpb.es.daw.entities.ItemCarrinho;
-import br.edu.ifpb.es.daw.entities.ItemCarrinhoId;
+import br.edu.ifpb.es.daw.model.ItemCarrinho;
+import br.edu.ifpb.es.daw.model.ItemCarrinhoId;
 import jakarta.persistence.EntityManager;
 
 public class ItemCarrinhoDAOImpl extends AbstractDAOImpl<ItemCarrinho> implements ItemCarrinhoDAO {

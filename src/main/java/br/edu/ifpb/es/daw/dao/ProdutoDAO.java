@@ -1,6 +1,6 @@
 package br.edu.ifpb.es.daw.dao;
 
-import br.edu.ifpb.es.daw.entities.Produto;
+import br.edu.ifpb.es.daw.model.Produto;
 
 import java.math.BigDecimal;
 import java.util.List;

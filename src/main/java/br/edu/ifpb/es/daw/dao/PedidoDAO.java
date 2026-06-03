@@ -1,7 +1,7 @@
 package br.edu.ifpb.es.daw.dao;
 
-import br.edu.ifpb.es.daw.entities.Cliente;
-import br.edu.ifpb.es.daw.entities.Pedido;
+import br.edu.ifpb.es.daw.model.Cliente;
+import br.edu.ifpb.es.daw.model.Pedido;
 
 import java.util.List;
 

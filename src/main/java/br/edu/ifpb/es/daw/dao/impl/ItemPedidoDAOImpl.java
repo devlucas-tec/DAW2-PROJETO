@@ -1,8 +1,8 @@
 package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.ItemPedidoDAO;
-import br.edu.ifpb.es.daw.entities.ItemPedido;
-import br.edu.ifpb.es.daw.entities.ItemPedidoId;
+import br.edu.ifpb.es.daw.model.ItemPedido;
+import br.edu.ifpb.es.daw.model.ItemPedidoId;
 import jakarta.persistence.EntityManager;
 
 public class ItemPedidoDAOImpl extends AbstractDAOImpl<ItemPedido> implements ItemPedidoDAO {

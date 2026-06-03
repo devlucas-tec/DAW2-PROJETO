@@ -2,7 +2,7 @@ package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.PersistenciaDawException;
 import br.edu.ifpb.es.daw.dao.ProdutoDAO;
-import br.edu.ifpb.es.daw.entities.Produto;
+import br.edu.ifpb.es.daw.model.Produto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;

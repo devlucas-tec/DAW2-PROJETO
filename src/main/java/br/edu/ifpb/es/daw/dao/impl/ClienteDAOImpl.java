@@ -1,7 +1,7 @@
 package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.ClienteDAO;
-import br.edu.ifpb.es.daw.entities.Cliente;
+import br.edu.ifpb.es.daw.model.Cliente;
 
 
 public class ClienteDAOImpl extends AbstractDAOImpl<Cliente> implements ClienteDAO {

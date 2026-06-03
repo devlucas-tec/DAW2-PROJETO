@@ -1,7 +1,7 @@
 package br.edu.ifpb.es.daw.dao.impl;
 
 import br.edu.ifpb.es.daw.dao.CupomDAO;
-import br.edu.ifpb.es.daw.entities.Cupom;
+import br.edu.ifpb.es.daw.model.Cupom;
 
 
 public class CupomDAOImpl extends AbstractDAOImpl<Cupom> implements CupomDAO {
