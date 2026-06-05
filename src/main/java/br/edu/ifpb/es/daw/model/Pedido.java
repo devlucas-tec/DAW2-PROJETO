@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -34,17 +33,20 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private StatusPedido status;
 
-    // Relacionamento com Cliente
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
-    // Relacionamento bidirecional com os itens
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
 
-    // Relacionamento com Cupom
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cupom") // Um Pedido NÃO precisa obrigatoriamente de um Cupom
+    @JoinColumn(name = "id_cupom")
     private Cupom cupom;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataPedido = LocalDateTime.now();
+        if (this.status == null) this.status = StatusPedido.CRIADO;
+    }
 }

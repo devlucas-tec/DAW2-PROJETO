@@ -3,8 +3,6 @@ package br.edu.ifpb.es.daw.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @ToString
@@ -22,7 +20,6 @@ public class Vendedor {
     @Column(name = "razao_social", length = 150, nullable = false)
     private String razaoSocial;
 
-    @Column(name = "cnj_cpf", length = 18, nullable = false, unique = true)
+    @Column(name = "cnpj_cpf", length = 18, nullable = false, unique = true)
     private String cnpjCpf;
-
 }

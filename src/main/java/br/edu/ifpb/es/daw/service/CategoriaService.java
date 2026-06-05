@@ -21,12 +21,12 @@ public class CategoriaService {
         return repository.save(obj);
     }
 
-    public List<Categoria> recuperarTodas() {
+    public List<Categoria> recuperarTodos() {
 
         return repository.findAll();
     }
 
-    public Optional<Categoria> buscarPorID(Long id) {
+    public Optional<Categoria> buscarPorId(Long id) {
 
         return repository.findById(id);
     }

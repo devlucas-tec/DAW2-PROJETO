@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -44,5 +43,6 @@ public class Pagamento {
     @PrePersist
     protected void onCreate() {
         this.dataPagamento = LocalDateTime.now();
+        if (this.status == null) this.status = StatusPagamento.PENDENTE;
     }
 }
