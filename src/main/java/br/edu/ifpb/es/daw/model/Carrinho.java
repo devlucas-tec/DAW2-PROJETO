@@ -1,12 +1,18 @@
 package br.edu.ifpb.es.daw.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 @Entity
 @Table(name = "carrinho")
 public class Carrinho {
@@ -30,8 +36,6 @@ public class Carrinho {
     @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemCarrinho> itens = new ArrayList<>();
 
-    public Carrinho() {
-    }
 
     @PrePersist
     protected void onCreate() {
@@ -41,42 +45,9 @@ public class Carrinho {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.dataAtualizacao = LocalDate.now();
     }
 
-    // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
-    public LocalDate getDataCriacao() { return dataCriacao; }
-    public void setDataCriacao(LocalDate dataCriacao) { this.dataCriacao = dataCriacao; }
-
-    public LocalDate getDataAtualizacao() { return dataAtualizacao; }
-    public void setDataAtualizacao(LocalDate dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
-
-    public Cliente getCliente() { return cliente; }
-    public void setCliente(Cliente cliente) { this.cliente = cliente; }
-
-    public List<ItemCarrinho> getItens() { return itens; }
-    public void setItens(List<ItemCarrinho> itens) { this.itens = itens; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Carrinho carrinho = (Carrinho) o;
-        return Objects.equals(id, carrinho.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Carrinho{" +
-                "id=" + id +
-                '}';
-    }
 }

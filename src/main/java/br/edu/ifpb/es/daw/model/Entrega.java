@@ -2,9 +2,16 @@ package br.edu.ifpb.es.daw.model;
 
 import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 @Entity
 @Table(name = "entrega")
 public class Entrega {
@@ -42,86 +49,5 @@ public class Entrega {
     @PreUpdate
     protected void onUpdate() {
         this.dataEntregaPrevista = LocalDateTime.now().plusDays(7);
-    }
-
-    public Entrega() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTransportadora() {
-        return transportadora;
-    }
-
-    public void setTransportadora(String transportadora) {
-        this.transportadora = transportadora;
-    }
-
-    public String getCodigoRastreamento() {
-        return codigoRastreamento;
-    }
-
-    public void setCodigoRastreamento(String codigoRastreamento) {
-        this.codigoRastreamento = codigoRastreamento;
-    }
-
-    public StatusEntrega getStatusEntrega() {
-        return statusEntrega;
-    }
-
-    public void setStatusEntrega(StatusEntrega statusEntrega) {
-        this.statusEntrega = statusEntrega;
-    }
-
-    public LocalDateTime getDataEnvio() {
-        return dataEnvio;
-    }
-
-    public void setDataEnvio(LocalDateTime dataEnvio) {
-        this.dataEnvio = dataEnvio;
-    }
-
-    public LocalDateTime getDataEntregaPrevista() {
-        return dataEntregaPrevista;
-    }
-
-    public void setDataEntregaPrevista(LocalDateTime dataEntregaPrevista) {
-        this.dataEntregaPrevista = dataEntregaPrevista;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
-    }
-
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Entrega entrega = (Entrega) o;
-        return Objects.equals(id, entrega.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Entrega{" +
-                "id=" + id +
-                ", transportadora='" + transportadora + '\'' +
-                ", rastreio='" + codigoRastreamento + '\'' +
-                ", status='" + statusEntrega + '\'' +
-                '}';
     }
 }

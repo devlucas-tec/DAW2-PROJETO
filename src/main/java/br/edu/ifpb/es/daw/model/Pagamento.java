@@ -3,10 +3,17 @@ package br.edu.ifpb.es.daw.model;
 import br.edu.ifpb.es.daw.model.enums.MetodoPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 @Entity
 @Table(name = "pagamento")
 public class Pagamento {
@@ -37,78 +44,5 @@ public class Pagamento {
     @PrePersist
     protected void onCreate() {
         this.dataPagamento = LocalDateTime.now();
-    }
-
-    public Pagamento() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public MetodoPagamento getMetodo() {
-        return metodo;
-    }
-
-    public void setMetodo(MetodoPagamento metodo) {
-        this.metodo = metodo;
-    }
-
-    public StatusPagamento getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusPagamento status) {
-        this.status = status;
-    }
-
-    public BigDecimal getValorPago() {
-        return valorPago;
-    }
-
-    public void setValorPago(BigDecimal valorPago) {
-        this.valorPago = valorPago;
-    }
-
-    public LocalDateTime getDataPagamento() {
-        return dataPagamento;
-    }
-
-    public void setDataPagamento(LocalDateTime dataPagamento) {
-        this.dataPagamento = dataPagamento;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
-    }
-
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Pagamento pagamento = (Pagamento) o;
-        return Objects.equals(id, pagamento.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Pagamento{" +
-                "id=" + id +
-                ", metodo='" + metodo + '\'' +
-                ", valor=" + valorPago +
-                ", status='" + status + '\'' +
-                '}';
     }
 }

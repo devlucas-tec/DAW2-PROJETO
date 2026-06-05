@@ -2,9 +2,16 @@ package br.edu.ifpb.es.daw.model;
 
 import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 @Entity
 @Table(name = "devolucao")
 public class Devolucao {
@@ -27,71 +34,9 @@ public class Devolucao {
     @JoinColumn(name = "id_pedido")
     private Pedido pedido;
 
-    public Devolucao() {
-    }
-
     @PrePersist
     protected void onCreate() {
         this.dataDevolucao = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getDataDevolucao() {
-        return dataDevolucao;
-    }
-
-    public void setDataDevolucao(LocalDateTime dataDevolucao) {
-        this.dataDevolucao = dataDevolucao;
-    }
-
-    public String getMotivo() {
-        return motivo;
-    }
-
-    public void setMotivo(String motivo) {
-        this.motivo = motivo;
-    }
-
-    public StatusDevolucao getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusDevolucao status) {
-        this.status = status;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
-    }
-
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Devolucao devolucao = (Devolucao) o;
-        return Objects.equals(id, devolucao.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Devolucao{" +
-                "id=" + id +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }

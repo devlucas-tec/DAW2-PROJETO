@@ -1,1 +1,0 @@
-controllers na raiz de rest e apenas a exception dentro de advice
