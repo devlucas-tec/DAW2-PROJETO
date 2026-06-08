@@ -3,24 +3,17 @@ package br.edu.ifpb.es.daw.mapper;
 import br.edu.ifpb.es.daw.model.Cupom;
 import br.edu.ifpb.es.daw.rest.dto.request.CupomRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.CupomResponseDTO;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class CupomMapper {
-    public CupomResponseDTO from(Cupom obj) {
-        CupomResponseDTO dto = new CupomResponseDTO();
-        dto.setId(obj.getId());
-        dto.setCodigo(obj.getCodigo());
-        dto.setValorDesconto(obj.getValorDesconto());
-        dto.setDataExpiracao(obj.getDataExpiracao());
-        dto.setStatus(obj.getStatus());
-        return dto;
-    }
-    public Cupom from(CupomRequestDTO dto) {
-        Cupom obj = new Cupom();
-        obj.setCodigo(dto.getCodigo());
-        obj.setValorDesconto(dto.getValorDesconto());
-        obj.setDataExpiracao(dto.getDataExpiracao());
-        return obj;
-    }
+@Mapper(componentModel = "spring")
+public interface CupomMapper {
+
+    CupomResponseDTO from(Cupom obj);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "pedidos", ignore = true)
+    Cupom from(CupomRequestDTO dto);
+
 }

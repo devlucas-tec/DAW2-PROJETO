@@ -3,27 +3,20 @@ package br.edu.ifpb.es.daw.mapper;
 import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class ClienteMapper {
+@Mapper(componentModel = "spring")
+public interface ClienteMapper {
 
-    public ClienteResponseDTO from(Cliente obj) {
-        ClienteResponseDTO dto = new ClienteResponseDTO();
-        dto.setId(obj.getId());
-        dto.setNome(obj.getNome());
-        dto.setEmail(obj.getEmail());
-        dto.setTelefone(obj.getTelefone());
-        dto.setDataCadastro(obj.getDataCadastro());
-        return dto;
-    }
+    ClienteResponseDTO from(Cliente obj);
 
-    public Cliente from(ClienteRequestDTO dto) {
-        Cliente obj = new Cliente();
-        obj.setNome(dto.getNome());
-        obj.setEmail(dto.getEmail());
-        obj.setSenha(dto.getSenha());
-        obj.setTelefone(dto.getTelefone());
-        return obj;
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "dataCadastro", ignore = true)
+    @Mapping(target = "dataAtualizacao", ignore = true)
+    @Mapping(target = "pedidos", ignore = true)
+    @Mapping(target = "carrinho", ignore = true)
+    @Mapping(target = "avaliacoes", ignore = true)
+    Cliente from(ClienteRequestDTO dto);
+
 }

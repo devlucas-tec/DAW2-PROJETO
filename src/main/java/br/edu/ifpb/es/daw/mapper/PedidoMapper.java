@@ -3,27 +3,22 @@ package br.edu.ifpb.es.daw.mapper;
 import br.edu.ifpb.es.daw.model.Pedido;
 import br.edu.ifpb.es.daw.rest.dto.request.PedidoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.PedidoResponseDTO;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class PedidoMapper {
+@Mapper(componentModel = "spring")
+public interface PedidoMapper {
 
-    public PedidoResponseDTO from(Pedido obj) {
-        PedidoResponseDTO dto = new PedidoResponseDTO();
-        dto.setId(obj.getId());
-        dto.setDataPedido(obj.getDataPedido());
-        dto.setValorTotal(obj.getValorTotal());
-        dto.setStatus(obj.getStatus());
-        if (obj.getCliente() != null) {
-            dto.setIdCliente(obj.getCliente().getId());
-            dto.setNomeCliente(obj.getCliente().getNome());
-        }
-        return dto;
-    }
+    @Mapping(target = "idCliente", source = "cliente.id")
+    @Mapping(target = "nomeCliente", source = "cliente.nome")
+    PedidoResponseDTO from(Pedido obj);
 
-    public Pedido from(PedidoRequestDTO dto) {
-        Pedido obj = new Pedido();
-        obj.setValorTotal(dto.getValorTotal());
-        return obj;
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "dataPedido", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "cliente", ignore = true)
+    @Mapping(target = "cupom", ignore = true)
+    @Mapping(target = "itens", ignore = true)
+    Pedido from(PedidoRequestDTO dto);
+
 }
