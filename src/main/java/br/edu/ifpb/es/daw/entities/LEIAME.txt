@@ -1,1 +1,0 @@
-TODO: adicionem neste pacote as classes a serem persistidas (i.e. as que serão marcadas com @Entity)
