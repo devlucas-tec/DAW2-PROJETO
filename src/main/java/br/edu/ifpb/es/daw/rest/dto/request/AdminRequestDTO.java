@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class AdminRequestDTO {
+    @NotBlank private String nome;
     @NotBlank @Email private String email;
     @NotBlank @Size(min = 6) private String senha;
 }
