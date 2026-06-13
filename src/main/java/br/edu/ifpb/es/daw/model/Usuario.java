@@ -22,6 +22,9 @@ public abstract class Usuario {
     @SequenceGenerator(name = "usuario_seq", sequenceName = "seq_usuario_id", allocationSize = 1)
     private Long id;
 
+    @Column(length = 100, nullable = false)
+    private String nome;
+
     @Column(length = 100, nullable = false, unique = true)
     private String email;
 
