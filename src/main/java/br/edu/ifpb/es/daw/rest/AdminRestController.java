@@ -27,14 +27,32 @@ public class AdminRestController implements AdminRestControllerApi {
 
     @Override @PostMapping
     public ResponseEntity<AdminResponseDTO> adicionar(@RequestBody @Valid AdminRequestDTO dto) {
-        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
+        Admin novo = mapper.from(dto);
+        return new ResponseEntity<>(mapper.from(service.criar(novo, dto.getSenha())), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
     public ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id) {
-        Admin obj = service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Admin", id));
-        return ResponseEntity.ok(mapper.from(obj));
+        return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
+    @Override @PatchMapping("/{id}")
+    public ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AdminRequestDTO dto) {
+        Admin obj = validarExiste(id);
+
+        obj.setEmail(dto.getEmail());
+
+        return ResponseEntity.ok(mapper.from(service.atualizar(obj, dto.getSenha())));
+    }
+
+    @Override @DeleteMapping("/{id}")
+    public ResponseEntity<Void> remover(@PathVariable Long id) {
+        service.remover(validarExiste(id));
+        return ResponseEntity.noContent().build();
+    }
+
+    private Admin validarExiste(Long id) {
+        return service.buscarPorId(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Admin", id));
+    }
 }

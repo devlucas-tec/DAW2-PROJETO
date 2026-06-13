@@ -21,9 +21,9 @@ public class AdminService {
     private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Admin criar(Admin obj) {
+    public Admin criar(Admin obj, String senhaTextoPuro) {
 
-        obj.setSenha(passwordEncoder.encode(obj.getSenha()));
+        obj.setSenha(passwordEncoder.encode(senhaTextoPuro));
         obj.setRole(Role.ADMIN);
 
         return repository.save(obj);
@@ -39,4 +39,19 @@ public class AdminService {
         return repository.findById(id);
     }
 
+    @Transactional
+    public Admin atualizar(Admin obj, String novaSenhaTextoPuro) {
+
+        if (novaSenhaTextoPuro != null && !novaSenhaTextoPuro.isBlank()) {
+            obj.setSenha(passwordEncoder.encode(novaSenhaTextoPuro));
+        }
+
+        return repository.save(obj);
+    }
+
+    @Transactional
+    public void remover(Admin obj) {
+
+        repository.delete(obj);
+    }
 }

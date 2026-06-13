@@ -12,4 +12,6 @@ public interface AdminRestControllerApi {
     @Operation(summary = "Listar todos os administradores") ResponseEntity<List<AdminResponseDTO>> listar();
     @Operation(summary = "Criar administrador") ResponseEntity<AdminResponseDTO> adicionar(AdminRequestDTO dto);
     @Operation(summary = "Buscar administrador por ID") ResponseEntity<AdminResponseDTO> recuperarPor(Long id);
+    @Operation(summary = "Atualizar administrador") ResponseEntity<AdminResponseDTO> atualizar(Long id, AdminRequestDTO dto);
+    @Operation(summary = "Remover administrador") ResponseEntity<Void> remover(Long id);
 }
