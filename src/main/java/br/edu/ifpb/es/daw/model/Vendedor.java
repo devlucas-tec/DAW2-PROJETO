@@ -5,21 +5,19 @@ import lombok.*;
 
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "vendedor")
-public class Vendedor {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_vendedor")
-    private Long id;
+@PrimaryKeyJoinColumn(name = "id")
+@DiscriminatorValue("VENDEDOR")
+public class Vendedor extends Usuario {
 
     @Column(name = "razao_social", length = 150, nullable = false)
     private String razaoSocial;
 
     @Column(name = "cnpj_cpf", length = 18, nullable = false, unique = true)
     private String cnpjCpf;
+
 }
