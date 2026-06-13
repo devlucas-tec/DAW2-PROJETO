@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class AdminResponseDTO {
     private Long id;
+    private String nome;
     private String email;
 }
