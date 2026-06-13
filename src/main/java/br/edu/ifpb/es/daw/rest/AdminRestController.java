@@ -1,0 +1,40 @@
+package br.edu.ifpb.es.daw.rest;
+
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
+import br.edu.ifpb.es.daw.mapper.AdminMapper;
+import br.edu.ifpb.es.daw.model.Admin;
+import br.edu.ifpb.es.daw.rest.dto.request.AdminRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.response.AdminResponseDTO;
+import br.edu.ifpb.es.daw.service.AdminService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/admin")
+public class AdminRestController implements AdminRestControllerApi {
+
+    @Autowired private AdminMapper mapper;
+    @Autowired private AdminService service;
+
+    @Override @GetMapping
+    public ResponseEntity<List<AdminResponseDTO>> listar() {
+        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    }
+
+    @Override @PostMapping
+    public ResponseEntity<AdminResponseDTO> adicionar(@RequestBody @Valid AdminRequestDTO dto) {
+        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
+    }
+
+    @Override @GetMapping("/{id}")
+    public ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id) {
+        Admin obj = service.buscarPorId(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Admin", id));
+        return ResponseEntity.ok(mapper.from(obj));
+    }
+
+}
