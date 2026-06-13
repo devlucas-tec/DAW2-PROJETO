@@ -1,9 +1,11 @@
 package br.edu.ifpb.es.daw.service;
 
 import br.edu.ifpb.es.daw.model.Cliente;
+import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +17,14 @@ public class ClienteService {
     @Autowired
     private ClienteRepository repository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional
     public Cliente criar(Cliente obj) {
+
+        obj.setSenha(passwordEncoder.encode(obj.getSenha()));
+        obj.setRole(Role.CLIENTE);
 
         return repository.save(obj);
     }
