@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class VendedorRequestDTO {
+    @NotBlank private String nome;
     @NotBlank private String razaoSocial;
     @NotBlank private String cnpjCpf;
 
