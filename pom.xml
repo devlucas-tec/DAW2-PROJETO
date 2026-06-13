@@ -76,6 +76,12 @@
             <version>${mapstruct.version}</version>
         </dependency>
 
+        <!-- SECURITY: autenticação e autorização (base para JWT na próxima issue) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
