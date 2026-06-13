@@ -7,4 +7,5 @@ public class VendedorResponseDTO {
     private Long id;
     private String razaoSocial;
     private String cnpjCpf;
+    private String email;
 }
