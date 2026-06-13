@@ -14,6 +14,8 @@ public interface ClienteMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "dataCadastro", ignore = true)
     @Mapping(target = "dataAtualizacao", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "ativo", ignore = true)
     @Mapping(target = "pedidos", ignore = true)
     @Mapping(target = "carrinho", ignore = true)
     @Mapping(target = "avaliacoes", ignore = true)
