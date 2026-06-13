@@ -17,9 +17,6 @@ import java.util.List;
 @DiscriminatorValue("CLIENTE")
 public class Cliente extends Usuario {
 
-    @Column(length = 100, nullable = false)
-    private String nome;
-
     private String telefone;
 
     // Lista todas as avaliações que o cliente fez
