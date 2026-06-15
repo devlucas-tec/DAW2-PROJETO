@@ -41,9 +41,7 @@ Seguindo as orientações da disciplina, a estrutura de acesso a dados utiliza:
 ## 🗺️ Modelo de Dados
 Abaixo, a representação visual do modelo conceitual do projeto, que foi desenvolvido na disciplina de Banco de Dados I :
 
-![Modelo Conceitual](./modelo-conceitual.png)
-[🔗 Visualizar diagrama original no editor](https://app.brmodeloweb.com/#!/publicview/69a720f96431b763534360b3)
-
+![Modelo Relacional](./modelo-relacional.png)
 ---
 **Desenvolvido por: Lucas Barbosa; Paulo Moura e ValdênioPantaleão**
 Estudantes de ADS - IFPB / 4° Período
