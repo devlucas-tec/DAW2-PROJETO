@@ -5,6 +5,9 @@ import br.edu.ifpb.es.daw.model.Produto;
 import br.edu.ifpb.es.daw.repository.ProdutoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,22 +16,22 @@ import java.util.Optional;
 @Service
 public class ProdutoService {
 
+    private static final int PAGE_SIZE = 10;
+
     @Autowired
     private ProdutoRepository repository;
 
     @Transactional
     public Produto criar(Produto obj) {
-
         return repository.save(obj);
     }
 
-    public List<Produto> recuperarTodos() {
-
-        return repository.findAll();
+    public Page<Produto> recuperarTodos(int page) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return repository.findAll(pageable);
     }
 
     public Optional<Produto> buscarPorId(Long id) {
-
         return repository.findById(id);
     }
 

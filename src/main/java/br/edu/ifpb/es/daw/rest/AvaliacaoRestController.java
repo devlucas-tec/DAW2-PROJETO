@@ -12,10 +12,10 @@ import br.edu.ifpb.es.daw.service.ClienteService;
 import br.edu.ifpb.es.daw.service.ProdutoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/avaliacoes")
@@ -27,8 +27,9 @@ public class AvaliacaoRestController implements AvaliacaoRestControllerApi {
     @Autowired private ProdutoService produtoService;
 
     @Override @GetMapping
-    public ResponseEntity<List<AvaliacaoResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping

@@ -13,10 +13,10 @@ import br.edu.ifpb.es.daw.service.PedidoService;
 import br.edu.ifpb.es.daw.service.ProdutoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/itens-pedido")
@@ -28,8 +28,9 @@ public class ItemPedidoRestController implements ItemPedidoRestControllerApi {
     @Autowired private ProdutoService produtoService;
 
     @Override @GetMapping
-    public ResponseEntity<List<ItemPedidoResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<ItemPedidoResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping

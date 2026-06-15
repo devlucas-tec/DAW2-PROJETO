@@ -5,14 +5,18 @@ import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.VendedorRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class VendedorService {
+
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
     private VendedorRepository repository;
@@ -22,32 +26,27 @@ public class VendedorService {
 
     @Transactional
     public Vendedor criar(Vendedor obj) {
-
         obj.setSenha(passwordEncoder.encode(obj.getSenha()));
         obj.setRole(Role.VENDEDOR);
-
         return repository.save(obj);
     }
 
-    public List<Vendedor> recuperarTodos() {
-
-        return repository.findAll();
+    public Page<Vendedor> recuperarTodos(int page) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return repository.findAll(pageable);
     }
 
     public Optional<Vendedor> buscarPorId(Long id) {
-
         return repository.findById(id);
     }
 
     @Transactional
     public Vendedor atualizar(Vendedor obj) {
-
         return repository.save(obj);
     }
 
     @Transactional
     public void remover(Vendedor obj) {
-
         repository.delete(obj);
     }
 }

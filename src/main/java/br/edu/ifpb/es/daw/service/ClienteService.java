@@ -5,14 +5,18 @@ import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ClienteService {
+
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
     private ClienteRepository repository;
@@ -22,20 +26,17 @@ public class ClienteService {
 
     @Transactional
     public Cliente criar(Cliente obj) {
-
         obj.setSenha(passwordEncoder.encode(obj.getSenha()));
         obj.setRole(Role.CLIENTE);
-
         return repository.save(obj);
     }
 
-    public List<Cliente> recuperarTodos() {
-
-        return repository.findAll();
+    public Page<Cliente> recuperarTodos(int page) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return repository.findAll(pageable);
     }
 
     public Optional<Cliente> buscarPorId(Long id) {
-
         return repository.findById(id);
     }
 
@@ -45,13 +46,11 @@ public class ClienteService {
 
     @Transactional
     public Cliente atualizar(Cliente obj) {
-
         return repository.save(obj);
     }
 
     @Transactional
     public void remover(Cliente obj) {
-
         repository.delete(obj);
     }
 }

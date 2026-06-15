@@ -30,5 +30,4 @@ public class Cliente extends Usuario {
     // Carrinho do cliente
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
     private Carrinho carrinho;
-
 }
