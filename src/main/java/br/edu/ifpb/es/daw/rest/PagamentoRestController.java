@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,7 @@ public class PagamentoRestController implements PagamentoRestControllerApi {
     @Autowired private PedidoService pedidoService;
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<PagamentoResponseDTO> adicionar(@RequestBody @Valid PagamentoRequestDTO dto) {
         Pagamento obj = mapper.from(dto);
         Pedido pedido = pedidoService.buscarPorId(dto.getIdPedido())
@@ -37,6 +39,7 @@ public class PagamentoRestController implements PagamentoRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}/confirmar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<PagamentoResponseDTO> confirmar(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.confirmar(validarExiste(id))));
     }

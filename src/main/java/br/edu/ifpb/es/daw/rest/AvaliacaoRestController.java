@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,12 +28,14 @@ public class AvaliacaoRestController implements AvaliacaoRestControllerApi {
     @Autowired private ProdutoService produtoService;
 
     @Override @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<Page<AvaliacaoResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<AvaliacaoResponseDTO> adicionar(@RequestBody @Valid AvaliacaoRequestDTO dto) {
         Avaliacao obj = mapper.from(dto);
         Cliente cliente = clienteService.buscarPorId(dto.getIdCliente())
@@ -51,6 +54,7 @@ public class AvaliacaoRestController implements AvaliacaoRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(service.buscarPorId(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Avaliacao", id)));

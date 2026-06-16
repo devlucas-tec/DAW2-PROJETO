@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,7 @@ public class CarrinhoRestController implements CarrinhoRestControllerApi {
     @Autowired private ClienteService clienteService;
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<CarrinhoResponseDTO> adicionar(@RequestBody @Valid CarrinhoRequestDTO dto) {
         Carrinho obj = mapper.from(dto);
         Cliente cliente = clienteService.buscarPorId(dto.getIdCliente())
@@ -38,6 +40,7 @@ public class CarrinhoRestController implements CarrinhoRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}/limpar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<CarrinhoResponseDTO> limpar(@PathVariable Long id) {
         Carrinho obj = service.buscarPorId(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Carrinho", id));

@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,6 +30,7 @@ public class DevolucaoRestController implements DevolucaoRestControllerApi {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<DevolucaoResponseDTO> adicionar(@RequestBody @Valid DevolucaoRequestDTO dto) {
         Devolucao obj = mapper.from(dto);
         Pedido pedido = pedidoService.buscarPorId(dto.getIdPedido())
@@ -45,12 +47,14 @@ public class DevolucaoRestController implements DevolucaoRestControllerApi {
 
     @Override
     @PatchMapping("/{id}/aprovar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<DevolucaoResponseDTO> aprovar(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.aprovar(validarExiste(id))));
     }
 
     @Override
     @PatchMapping("/{id}/rejeitar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<DevolucaoResponseDTO> rejeitar(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.rejeitar(validarExiste(id))));
     }

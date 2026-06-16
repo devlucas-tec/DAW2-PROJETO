@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,23 +22,27 @@ public class AdminRestController implements AdminRestControllerApi {
     @Autowired private AdminService service;
 
     @Override @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<AdminResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<AdminResponseDTO> adicionar(@RequestBody @Valid AdminRequestDTO dto) {
         Admin novo = mapper.from(dto);
         return new ResponseEntity<>(mapper.from(service.criar(novo, dto.getSenha())), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
     @Override @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AdminRequestDTO dto) {
         Admin obj = validarExiste(id);
         obj.setEmail(dto.getEmail());
@@ -45,6 +50,7 @@ public class AdminRestController implements AdminRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();

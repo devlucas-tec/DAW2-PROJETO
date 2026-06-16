@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -29,12 +30,14 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     @Autowired private VendedorService vendedorService;
 
     @Override @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<Page<ProdutoResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @GetMapping("/buscar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<Page<ProdutoResponseDTO>> buscar(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) Long idCategoria,
@@ -47,6 +50,7 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     }
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<ProdutoResponseDTO> adicionar(@RequestBody @Valid ProdutoRequestDTO dto) {
         Produto obj = mapper.from(dto);
         Categoria categoria = categoriaService.buscarPorId(dto.getIdCategoria())
@@ -59,11 +63,13 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     }
 
     @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<ProdutoResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
     @Override @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id,
                                                         @RequestBody @Valid ProdutoRequestDTO dto) {
         Produto obj = validarExiste(id);
@@ -80,6 +86,7 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,12 +22,13 @@ public class ClienteRestController implements ClienteRestControllerApi {
     @Autowired private ClienteService service;
 
     @Override @GetMapping
-    public ResponseEntity<Page<ClienteResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
+    public ResponseEntity<Page<ClienteResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @GetMapping("/buscar")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<Page<ClienteResponseDTO>> buscar(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String email,
@@ -36,18 +38,18 @@ public class ClienteRestController implements ClienteRestControllerApi {
 
     @Override @PostMapping
     public ResponseEntity<ClienteResponseDTO> adicionar(@RequestBody @Valid ClienteRequestDTO dto) {
-        Cliente obj = service.criar(mapper.from(dto));
-        return new ResponseEntity<>(mapper.from(obj), HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<ClienteResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id,
-                                                        @RequestBody @Valid ClienteRequestDTO dto) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
         Cliente obj = validarExiste(id);
         obj.setNome(dto.getNome());
         obj.setEmail(dto.getEmail());
@@ -56,13 +58,13 @@ public class ClienteRestController implements ClienteRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();
     }
 
     private Cliente validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", id));
+        return service.buscarPorId(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", id));
     }
 }
