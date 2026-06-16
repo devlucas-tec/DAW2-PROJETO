@@ -31,9 +31,20 @@ public class ClienteService {
         return repository.save(obj);
     }
 
+    // listagem simples com paginação (mantida para compatibilidade)
     public Page<Cliente> recuperarTodos(int page) {
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         return repository.findAll(pageable);
+    }
+
+    // listagem com filtros + paginação
+    public Page<Cliente> filtrar(String nome, String email, int page) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return repository.filtrar(
+                nome  != null && nome.isBlank()  ? null : nome,
+                email != null && email.isBlank() ? null : email,
+                pageable
+        );
     }
 
     public Optional<Cliente> buscarPorId(Long id) {

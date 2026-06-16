@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.service;
 
 import br.edu.ifpb.es.daw.model.Cupom;
+import br.edu.ifpb.es.daw.model.enums.StatusCupom;
 import br.edu.ifpb.es.daw.repository.CupomRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,20 @@ public class CupomService {
         return repository.save(obj);
     }
 
+    // listagem simples com paginação (mantida para compatibilidade)
     public Page<Cupom> recuperarTodos(int page) {
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         return repository.findAll(pageable);
+    }
+
+    // listagem com filtros + paginação
+    public Page<Cupom> filtrar(String codigo, StatusCupom status, int page) {
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return repository.filtrar(
+                codigo != null && codigo.isBlank() ? null : codigo,
+                status,
+                pageable
+        );
     }
 
     public Optional<Cupom> buscarPorId(Long id) {
