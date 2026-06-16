@@ -50,3 +50,6 @@ buildNumber.properties
 
 ### Intellij ###
 .idea/
+
+
+src/main/resources/application.properties
