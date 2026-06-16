@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,6 +28,7 @@ public class EnderecoRestController implements EnderecoRestControllerApi {
     }
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<EnderecoResponseDTO> adicionar(@RequestBody @Valid EnderecoRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
@@ -37,6 +39,7 @@ public class EnderecoRestController implements EnderecoRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<EnderecoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid EnderecoRequestDTO dto) {
         Endereco obj = validarExiste(id);
         Endereco atualizado = mapper.from(dto);
@@ -45,6 +48,7 @@ public class EnderecoRestController implements EnderecoRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();

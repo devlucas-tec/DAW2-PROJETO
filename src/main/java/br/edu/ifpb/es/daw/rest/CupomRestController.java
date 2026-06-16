@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,12 +23,14 @@ public class CupomRestController implements CupomRestControllerApi {
     @Autowired private CupomService service;
 
     @Override @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<CupomResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @GetMapping("/buscar")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<CupomResponseDTO>> buscar(
             @RequestParam(required = false) String codigo,
             @RequestParam(required = false) StatusCupom status,
@@ -36,16 +39,19 @@ public class CupomRestController implements CupomRestControllerApi {
     }
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<CupomResponseDTO> adicionar(@RequestBody @Valid CupomRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<CupomResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
     @Override @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<CupomResponseDTO> atualizar(@PathVariable Long id,
                                                       @RequestBody @Valid CupomRequestDTO dto) {
         Cupom obj = validarExiste(id);
@@ -55,6 +61,7 @@ public class CupomRestController implements CupomRestControllerApi {
     }
 
     @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();

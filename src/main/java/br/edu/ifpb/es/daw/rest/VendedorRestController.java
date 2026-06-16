@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,23 +21,30 @@ public class VendedorRestController implements VendedorRestControllerApi {
     @Autowired private VendedorMapper mapper;
     @Autowired private VendedorService service;
 
-    @Override @GetMapping
-    public ResponseEntity<Page<VendedorResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @Override
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
+    public ResponseEntity<Page<VendedorResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
-    @Override @PostMapping
+    @Override
+    @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<VendedorResponseDTO> adicionar(@RequestBody @Valid VendedorRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
 
-    @Override @GetMapping("/{id}")
+    @Override
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE', 'VENDEDOR')")
     public ResponseEntity<VendedorResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
-    @Override @PatchMapping("/{id}")
+    @Override
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<VendedorResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid VendedorRequestDTO dto) {
         Vendedor obj = validarExiste(id);
         Vendedor atualizado = mapper.from(dto);
@@ -44,7 +52,9 @@ public class VendedorRestController implements VendedorRestControllerApi {
         return ResponseEntity.ok(mapper.from(service.atualizar(atualizado)));
     }
 
-    @Override @DeleteMapping("/{id}")
+    @Override
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
         service.remover(validarExiste(id));
         return ResponseEntity.noContent().build();
