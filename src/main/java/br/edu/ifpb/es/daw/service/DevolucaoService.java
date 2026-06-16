@@ -1,5 +1,6 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import br.edu.ifpb.es.daw.model.Devolucao;
 import br.edu.ifpb.es.daw.model.Pedido;
 import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
@@ -18,12 +19,10 @@ public class DevolucaoService {
 
     @Transactional
     public Devolucao criar(Devolucao obj) {
-
         return repository.save(obj);
     }
 
     public Optional<Devolucao> buscarPorId(Long id) {
-
         return repository.findById(id);
     }
 
@@ -33,12 +32,22 @@ public class DevolucaoService {
 
     @Transactional
     public Devolucao aprovar(Devolucao obj) {
+        if (obj.getStatus() != StatusDevolucao.PENDENTE) {
+            throw new EstadoInvalidoException(
+                    "Devolução só pode ser aprovada se estiver PENDENTE. Status atual: " + obj.getStatus()
+            );
+        }
         repository.atualizarStatus(obj.getId(), StatusDevolucao.APROVADA);
         return repository.findById(obj.getId()).get();
     }
 
     @Transactional
     public Devolucao rejeitar(Devolucao obj) {
+        if (obj.getStatus() != StatusDevolucao.PENDENTE) {
+            throw new EstadoInvalidoException(
+                    "Devolução só pode ser rejeitada se estiver PENDENTE. Status atual: " + obj.getStatus()
+            );
+        }
         repository.atualizarStatus(obj.getId(), StatusDevolucao.RECUSADA);
         return repository.findById(obj.getId()).get();
     }
