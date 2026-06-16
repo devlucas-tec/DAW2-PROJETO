@@ -1,10 +1,13 @@
 package br.edu.ifpb.es.daw.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SpringDocConfiguration {
@@ -24,6 +27,14 @@ public class SpringDocConfiguration {
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("IFPB - Instituto Federal da Paraíba")
-                                .url("https://www.ifpb.edu.br")));
+                                .url("https://www.ifpb.edu.br")))
+                .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
+                .components(new Components()
+                        .addSecuritySchemes("bearer-jwt",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("Insira o token JWT obtido em POST /auth/login")));
     }
 }
