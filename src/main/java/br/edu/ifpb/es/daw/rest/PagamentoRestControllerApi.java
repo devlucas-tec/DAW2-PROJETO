@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "pagamentos", description = "API Pagamentos")
+@Tag(name = "Pagamentos", description = "API Pagamentos")
 public interface PagamentoRestControllerApi {
     @Operation(summary = "Registrar pagamento") ResponseEntity<PagamentoResponseDTO> adicionar(PagamentoRequestDTO dto);
     @Operation(summary = "Buscar pagamento por ID") ResponseEntity<PagamentoResponseDTO> recuperarPor(Long id);

@@ -26,6 +26,14 @@ public class ClienteRestController implements ClienteRestControllerApi {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
+    @Override @GetMapping("/buscar")
+    public ResponseEntity<Page<ClienteResponseDTO>> buscar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String email,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.filtrar(nome, email, page).map(mapper::from));
+    }
+
     @Override @PostMapping
     public ResponseEntity<ClienteResponseDTO> adicionar(@RequestBody @Valid ClienteRequestDTO dto) {
         Cliente obj = service.criar(mapper.from(dto));
@@ -38,7 +46,8 @@ public class ClienteRestController implements ClienteRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id,
+                                                        @RequestBody @Valid ClienteRequestDTO dto) {
         Cliente obj = validarExiste(id);
         obj.setNome(dto.getNome());
         obj.setEmail(dto.getEmail());

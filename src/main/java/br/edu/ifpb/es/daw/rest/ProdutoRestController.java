@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoRestController implements ProdutoRestControllerApi {
@@ -30,6 +32,18 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     public ResponseEntity<Page<ProdutoResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    }
+
+    @Override @GetMapping("/buscar")
+    public ResponseEntity<Page<ProdutoResponseDTO>> buscar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Long idCategoria,
+            @RequestParam(required = false) BigDecimal precoMin,
+            @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(
+                service.filtrar(nome, idCategoria, precoMin, precoMax, page).map(mapper::from)
+        );
     }
 
     @Override @PostMapping
@@ -50,7 +64,8 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ProdutoRequestDTO dto) {
+    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id,
+                                                        @RequestBody @Valid ProdutoRequestDTO dto) {
         Produto obj = validarExiste(id);
         obj.setNome(dto.getNome());
         obj.setDescricao(dto.getDescricao());

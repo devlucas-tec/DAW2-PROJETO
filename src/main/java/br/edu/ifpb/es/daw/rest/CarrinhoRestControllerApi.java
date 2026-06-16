@@ -6,9 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "carrinhos", description = "API Carrinhos")
+@Tag(name = "Carrinho", description = "API Carrinho")
 public interface CarrinhoRestControllerApi {
-    @Operation(summary = "Criar carrinho") ResponseEntity<CarrinhoResponseDTO> adicionar(CarrinhoRequestDTO dto);
-    @Operation(summary = "Buscar carrinho por ID") ResponseEntity<CarrinhoResponseDTO> recuperarPor(Long id);
-    @Operation(summary = "Limpar carrinho") ResponseEntity<CarrinhoResponseDTO> limpar(Long id);
+    @Operation(summary = "Criar carrinho")
+    ResponseEntity<CarrinhoResponseDTO> adicionar(CarrinhoRequestDTO dto);
+
+    @Operation(summary = "Buscar carrinho por ID")
+    ResponseEntity<CarrinhoResponseDTO> recuperarPor(Long id);
+
+    @Operation(summary = "Limpar carrinho")
+    ResponseEntity<CarrinhoResponseDTO> limpar(Long id);
 }
