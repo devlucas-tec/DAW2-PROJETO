@@ -34,6 +34,7 @@ public class SeedService {
     private final DevolucaoRepository devolucaoRepository;
     private final AvaliacaoRepository avaliacaoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final br.edu.ifpb.es.daw.config.StartupListener startupListener;
 
     public SeedService(
             AdminRepository adminRepository,
@@ -51,7 +52,8 @@ public class SeedService {
             EntregaRepository entregaRepository,
             DevolucaoRepository devolucaoRepository,
             AvaliacaoRepository avaliacaoRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            br.edu.ifpb.es.daw.config.StartupListener startupListener) {
 
         this.adminRepository = adminRepository;
         this.clienteRepository = clienteRepository;
@@ -69,6 +71,7 @@ public class SeedService {
         this.devolucaoRepository = devolucaoRepository;
         this.avaliacaoRepository = avaliacaoRepository;
         this.passwordEncoder = passwordEncoder;
+        this.startupListener = startupListener;
     }
 
     @Transactional
@@ -88,6 +91,9 @@ public class SeedService {
         clienteRepository.deleteAll();
         vendedorRepository.deleteAll();
         adminRepository.deleteAll();
+
+        // Garante que o admin padrão sempre exista, mesmo após limpar tudo
+        startupListener.criarAdminPadraoSeNaoExistir();
     }
 
     @Transactional
