@@ -8,10 +8,10 @@ import br.edu.ifpb.es.daw.rest.dto.response.VendedorResponseDTO;
 import br.edu.ifpb.es.daw.service.VendedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/vendedores")
@@ -21,8 +21,9 @@ public class VendedorRestController implements VendedorRestControllerApi {
     @Autowired private VendedorService service;
 
     @Override @GetMapping
-    public ResponseEntity<List<VendedorResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<VendedorResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping

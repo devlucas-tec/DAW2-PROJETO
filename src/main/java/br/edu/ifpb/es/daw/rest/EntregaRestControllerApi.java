@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "entregas", description = "API Entregas")
+@Tag(name = "Entregas", description = "API Entregas")
 public interface EntregaRestControllerApi {
     @Operation(summary = "Registrar entrega") ResponseEntity<EntregaResponseDTO> adicionar(EntregaRequestDTO dto);
     @Operation(summary = "Buscar entrega por ID") ResponseEntity<EntregaResponseDTO> recuperarPor(Long id);

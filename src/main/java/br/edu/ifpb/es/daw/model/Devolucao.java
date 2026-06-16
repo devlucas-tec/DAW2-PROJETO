@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -28,7 +27,7 @@ public class Devolucao {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private StatusDevolucao status = StatusDevolucao.APROVADA;
+    private StatusDevolucao status = StatusDevolucao.PENDENTE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido")
@@ -38,5 +37,4 @@ public class Devolucao {
     protected void onCreate() {
         this.dataDevolucao = LocalDateTime.now();
     }
-
 }

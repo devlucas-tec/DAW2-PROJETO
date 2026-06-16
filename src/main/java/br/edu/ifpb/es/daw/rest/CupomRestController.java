@@ -3,15 +3,16 @@ package br.edu.ifpb.es.daw.rest;
 import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.CupomMapper;
 import br.edu.ifpb.es.daw.model.Cupom;
+import br.edu.ifpb.es.daw.model.enums.StatusCupom;
 import br.edu.ifpb.es.daw.rest.dto.request.CupomRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.CupomResponseDTO;
 import br.edu.ifpb.es.daw.service.CupomService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/cupons")
@@ -21,8 +22,17 @@ public class CupomRestController implements CupomRestControllerApi {
     @Autowired private CupomService service;
 
     @Override @GetMapping
-    public ResponseEntity<List<CupomResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<CupomResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    }
+
+    @Override @GetMapping("/buscar")
+    public ResponseEntity<Page<CupomResponseDTO>> buscar(
+            @RequestParam(required = false) String codigo,
+            @RequestParam(required = false) StatusCupom status,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.filtrar(codigo, status, page).map(mapper::from));
     }
 
     @Override @PostMapping
@@ -36,7 +46,8 @@ public class CupomRestController implements CupomRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<CupomResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CupomRequestDTO dto) {
+    public ResponseEntity<CupomResponseDTO> atualizar(@PathVariable Long id,
+                                                      @RequestBody @Valid CupomRequestDTO dto) {
         Cupom obj = validarExiste(id);
         Cupom atualizado = mapper.from(dto);
         atualizado.setId(obj.getId());

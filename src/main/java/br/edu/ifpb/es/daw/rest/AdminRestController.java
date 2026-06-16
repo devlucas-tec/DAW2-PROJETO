@@ -8,10 +8,10 @@ import br.edu.ifpb.es.daw.rest.dto.response.AdminResponseDTO;
 import br.edu.ifpb.es.daw.service.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
@@ -21,8 +21,9 @@ public class AdminRestController implements AdminRestControllerApi {
     @Autowired private AdminService service;
 
     @Override @GetMapping
-    public ResponseEntity<List<AdminResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<AdminResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
@@ -39,9 +40,7 @@ public class AdminRestController implements AdminRestControllerApi {
     @Override @PatchMapping("/{id}")
     public ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AdminRequestDTO dto) {
         Admin obj = validarExiste(id);
-
         obj.setEmail(dto.getEmail());
-
         return ResponseEntity.ok(mapper.from(service.atualizar(obj, dto.getSenha())));
     }
 

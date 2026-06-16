@@ -8,11 +8,10 @@ import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
 import br.edu.ifpb.es.daw.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
@@ -22,8 +21,17 @@ public class ClienteRestController implements ClienteRestControllerApi {
     @Autowired private ClienteService service;
 
     @Override @GetMapping
-    public ResponseEntity<List<ClienteResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<ClienteResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    }
+
+    @Override @GetMapping("/buscar")
+    public ResponseEntity<Page<ClienteResponseDTO>> buscar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String email,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.filtrar(nome, email, page).map(mapper::from));
     }
 
     @Override @PostMapping
@@ -38,7 +46,8 @@ public class ClienteRestController implements ClienteRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id,
+                                                        @RequestBody @Valid ClienteRequestDTO dto) {
         Cliente obj = validarExiste(id);
         obj.setNome(dto.getNome());
         obj.setEmail(dto.getEmail());

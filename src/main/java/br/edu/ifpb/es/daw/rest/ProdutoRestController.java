@@ -12,11 +12,12 @@ import br.edu.ifpb.es.daw.service.ProdutoService;
 import br.edu.ifpb.es.daw.service.VendedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/produtos")
@@ -28,8 +29,21 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     @Autowired private VendedorService vendedorService;
 
     @Override @GetMapping
-    public ResponseEntity<List<ProdutoResponseDTO>> listar() {
-        return ResponseEntity.ok(service.recuperarTodos().stream().map(mapper::from).toList());
+    public ResponseEntity<Page<ProdutoResponseDTO>> listar(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    }
+
+    @Override @GetMapping("/buscar")
+    public ResponseEntity<Page<ProdutoResponseDTO>> buscar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Long idCategoria,
+            @RequestParam(required = false) BigDecimal precoMin,
+            @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(
+                service.filtrar(nome, idCategoria, precoMin, precoMax, page).map(mapper::from)
+        );
     }
 
     @Override @PostMapping
@@ -50,7 +64,8 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     }
 
     @Override @PatchMapping("/{id}")
-    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ProdutoRequestDTO dto) {
+    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id,
+                                                        @RequestBody @Valid ProdutoRequestDTO dto) {
         Produto obj = validarExiste(id);
         obj.setNome(dto.getNome());
         obj.setDescricao(dto.getDescricao());

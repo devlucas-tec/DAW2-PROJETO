@@ -4,14 +4,26 @@ import br.edu.ifpb.es.daw.rest.dto.request.AdminRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.AdminResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "admin", description = "API Administradores")
+@Tag(name = "Admin", description = "API Admin")
 public interface AdminRestControllerApi {
-    @Operation(summary = "Listar todos os administradores") ResponseEntity<List<AdminResponseDTO>> listar();
-    @Operation(summary = "Criar administrador") ResponseEntity<AdminResponseDTO> adicionar(AdminRequestDTO dto);
-    @Operation(summary = "Buscar administrador por ID") ResponseEntity<AdminResponseDTO> recuperarPor(Long id);
-    @Operation(summary = "Atualizar administrador") ResponseEntity<AdminResponseDTO> atualizar(Long id, AdminRequestDTO dto);
-    @Operation(summary = "Remover administrador") ResponseEntity<Void> remover(Long id);
+    @Operation(summary = "Listar todos os admins")
+    ResponseEntity<Page<AdminResponseDTO>> listar(@RequestParam(defaultValue = "0") int page);
+
+    @Operation(summary = "Criar admin")
+    ResponseEntity<AdminResponseDTO> adicionar(@RequestBody AdminRequestDTO dto);
+
+    @Operation(summary = "Buscar admin por ID")
+    ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id);
+
+    @Operation(summary = "Atualizar admin")
+    ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody AdminRequestDTO dto);
+
+    @Operation(summary = "Remover admin")
+    ResponseEntity<Void> remover(@PathVariable Long id);
 }

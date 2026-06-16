@@ -18,11 +18,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/devolucoes")
 public class DevolucaoRestController implements DevolucaoRestControllerApi {
 
-    @Autowired private DevolucaoMapper mapper;
-    @Autowired private DevolucaoService service;
-    @Autowired private PedidoService pedidoService;
+    @Autowired
+    private DevolucaoMapper mapper;
 
-    @Override @PostMapping
+    @Autowired
+    private DevolucaoService service;
+
+    @Autowired
+    private PedidoService pedidoService;
+
+    @Override
+    @PostMapping
     public ResponseEntity<DevolucaoResponseDTO> adicionar(@RequestBody @Valid DevolucaoRequestDTO dto) {
         Devolucao obj = mapper.from(dto);
         Pedido pedido = pedidoService.buscarPorId(dto.getIdPedido())
@@ -31,17 +37,20 @@ public class DevolucaoRestController implements DevolucaoRestControllerApi {
         return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
     }
 
-    @Override @GetMapping("/{id}")
+    @Override
+    @GetMapping("/{id}")
     public ResponseEntity<DevolucaoResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(validarExiste(id)));
     }
 
-    @Override @PatchMapping("/{id}/aprovar")
+    @Override
+    @PatchMapping("/{id}/aprovar")
     public ResponseEntity<DevolucaoResponseDTO> aprovar(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.aprovar(validarExiste(id))));
     }
 
-    @Override @PatchMapping("/{id}/rejeitar")
+    @Override
+    @PatchMapping("/{id}/rejeitar")
     public ResponseEntity<DevolucaoResponseDTO> rejeitar(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.rejeitar(validarExiste(id))));
     }
