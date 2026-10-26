@@ -6,7 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "vendedor")
@@ -19,5 +19,4 @@ public class Vendedor extends Usuario {
 
     @Column(name = "cnpj_cpf", length = 18, nullable = false, unique = true)
     private String cnpjCpf;
-
 }

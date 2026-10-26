@@ -11,13 +11,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "pagamento")
 public class Pagamento {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id_pagamento")
     private Long id;
@@ -36,13 +37,14 @@ public class Pagamento {
     @Column(name = "data_pagamento", nullable = false)
     private LocalDateTime dataPagamento;
 
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_pedido")
+    @JoinColumn(name = "id_pedido", nullable = false, unique = true)
     private Pedido pedido;
 
     @PrePersist
     protected void onCreate() {
-        this.dataPagamento = LocalDateTime.now();
+        if (this.dataPagamento == null) this.dataPagamento = LocalDateTime.now();
         if (this.status == null) this.status = StatusPagamento.PENDENTE;
     }
 }

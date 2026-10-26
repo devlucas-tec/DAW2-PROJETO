@@ -4,25 +4,27 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "item_carrinho")
 public class ItemCarrinho {
 
     @EmbeddedId
+    @EqualsAndHashCode.Include
     private ItemCarrinhoId id;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("carrinhoId")
     @JoinColumn(name = "carrinho_id")
     private Carrinho carrinho;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("produtoId")
     @JoinColumn(name = "produto_id")

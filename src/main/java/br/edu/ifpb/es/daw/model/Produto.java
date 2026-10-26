@@ -11,13 +11,14 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "produto")
 public class Produto {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id_produto")
     private Long id;
@@ -34,10 +35,12 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vendedor", nullable = false)
     private Vendedor vendedor;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
@@ -48,12 +51,13 @@ public class Produto {
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "produto")
     private List<Avaliacao> avaliacoes = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
+        if (this.dataCadastro == null) this.dataCadastro = LocalDateTime.now();
         this.dataAtualizacao = LocalDateTime.now();
     }
 

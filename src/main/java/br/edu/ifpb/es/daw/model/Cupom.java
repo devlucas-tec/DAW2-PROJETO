@@ -8,18 +8,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "cupom")
 public class Cupom {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -33,9 +33,15 @@ public class Cupom {
     private LocalDate dataExpiracao;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
+    @Column(name = "status", length = 20, nullable = false)
     private StatusCupom status = StatusCupom.ATIVO;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "cupom")
     private List<Pedido> pedidos = new ArrayList<>();
+
+    public boolean isValido() {
+        return status == StatusCupom.ATIVO
+                && (dataExpiracao == null || !dataExpiracao.isBefore(LocalDate.now()));
+    }
 }

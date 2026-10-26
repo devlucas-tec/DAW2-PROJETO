@@ -5,18 +5,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "entrega")
 public class Entrega {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -28,7 +28,7 @@ public class Entrega {
 
     @Column(name = "status_entrega", nullable = false)
     @Enumerated(EnumType.STRING)
-    private StatusEntrega statusEntrega;
+    private StatusEntrega statusEntrega = StatusEntrega.EMBALADO;
 
     @Column(name = "data_envio")
     private LocalDateTime dataEnvio;
@@ -36,18 +36,17 @@ public class Entrega {
     @Column(name = "data_entrega_prevista")
     private LocalDateTime dataEntregaPrevista;
 
+    @Column(name = "data_entrega")
+    private LocalDateTime dataEntrega;
+
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_pedido")
+    @JoinColumn(name = "id_pedido", nullable = false, unique = true)
     private Pedido pedido;
 
     @PrePersist
     protected void onCreate() {
-        this.dataEnvio = LocalDateTime.now();
-        this.dataEntregaPrevista = LocalDateTime.now().plusDays(7);
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.dataEntregaPrevista = LocalDateTime.now().plusDays(7);
+        if (this.dataEnvio == null) this.dataEnvio = LocalDateTime.now();
+        if (this.dataEntregaPrevista == null) this.dataEntregaPrevista = this.dataEnvio.plusDays(7);
     }
 }

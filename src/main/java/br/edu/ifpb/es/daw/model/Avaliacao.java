@@ -4,18 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
-@Table(name = "avaliacao")
+@Table(name = "avaliacao", uniqueConstraints = @UniqueConstraint(columnNames = {"id_cliente", "id_produto"}))
 public class Avaliacao {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -28,20 +28,18 @@ public class Avaliacao {
     @Column(name = "data_avaliacao", nullable = false)
     private LocalDateTime dataAvaliacao;
 
-    // Relacionamentos Adicionados
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_produto", nullable = false)
     private Produto produto;
 
     @PrePersist
     protected void onCreate() {
-
-        this.dataAvaliacao = LocalDateTime.now();
+        if (this.dataAvaliacao == null) this.dataAvaliacao = LocalDateTime.now();
     }
-
-
 }

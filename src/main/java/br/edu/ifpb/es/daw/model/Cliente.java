@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "cliente")
@@ -17,17 +17,18 @@ import java.util.List;
 @DiscriminatorValue("CLIENTE")
 public class Cliente extends Usuario {
 
+    @Column(length = 20)
     private String telefone;
 
-    // Lista todas as avaliações que o cliente fez
+    @ToString.Exclude
     @OneToMany(mappedBy = "cliente")
     private List<Avaliacao> avaliacoes = new ArrayList<>();
 
-    // Lista todos os pedidos do cliente
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @OneToMany(mappedBy = "cliente")
     private List<Pedido> pedidos = new ArrayList<>();
 
-    // Carrinho do cliente
+    @ToString.Exclude
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL)
     private Carrinho carrinho;
 }

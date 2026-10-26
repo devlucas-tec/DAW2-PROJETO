@@ -13,8 +13,7 @@ import java.util.Optional;
 @Repository
 public interface CupomRepository extends JpaRepository<Cupom, Long> {
 
-    @Query("SELECT c FROM Cupom c WHERE c.codigo = :codigo")
-    Optional<Cupom> buscarPorCodigo(String codigo);
+    Optional<Cupom> findByCodigoIgnoreCase(String codigo);
 
     @Query("""
             SELECT c FROM Cupom c

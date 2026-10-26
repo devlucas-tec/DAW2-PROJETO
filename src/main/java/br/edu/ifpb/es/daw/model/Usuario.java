@@ -2,15 +2,19 @@ package br.edu.ifpb.es.daw.model;
 
 import br.edu.ifpb.es.daw.model.enums.Role;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "usuario")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -18,6 +22,7 @@ import java.time.LocalDateTime;
 public abstract class Usuario {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
     @SequenceGenerator(name = "usuario_seq", sequenceName = "seq_usuario_id", allocationSize = 1)
     private Long id;
@@ -28,6 +33,7 @@ public abstract class Usuario {
     @Column(length = 100, nullable = false, unique = true)
     private String email;
 
+    @ToString.Exclude
     @Column(name = "senha_hash", nullable = false)
     private String senha;
 
@@ -46,7 +52,7 @@ public abstract class Usuario {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
+        if (this.dataCadastro == null) this.dataCadastro = LocalDateTime.now();
         this.dataAtualizacao = LocalDateTime.now();
     }
 
@@ -54,5 +60,4 @@ public abstract class Usuario {
     protected void onUpdate() {
         this.dataAtualizacao = LocalDateTime.now();
     }
-
 }

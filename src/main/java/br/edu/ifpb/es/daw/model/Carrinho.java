@@ -6,18 +6,18 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Entity
 @Table(name = "carrinho")
 public class Carrinho {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -27,27 +27,23 @@ public class Carrinho {
     @Column(name = "data_ultima_atualizacao", nullable = false)
     private LocalDate dataAtualizacao;
 
-    // Vínculo com Cliente (Um cliente tem um carrinho)
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false, unique = true)
     private Cliente cliente;
 
-    // Itens do Carrinho
+    @ToString.Exclude
     @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemCarrinho> itens = new ArrayList<>();
 
-
     @PrePersist
     protected void onCreate() {
-        this.dataCriacao = LocalDate.now();
-        this.dataAtualizacao = LocalDate.now();
+        if (this.dataCriacao == null) this.dataCriacao = LocalDate.now();
+        if (this.dataAtualizacao == null) this.dataAtualizacao = LocalDate.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-
         this.dataAtualizacao = LocalDate.now();
     }
-
-
 }
