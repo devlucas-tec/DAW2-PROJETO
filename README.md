@@ -6,7 +6,7 @@ Este repositório contém o projeto prático da disciplina de **Desenvolvimento 
 
 ## 📖 Sobre o Projeto
 
-A aplicação é uma API REST que gerencia as operações de um marketplace, conectando clientes e vendedores. O projeto iniciou com o **Mapeamento Objeto-Relacional (ORM)** de um modelo de dados desenvolvido na disciplina de Banco de Dados I, utilizando JPA/Hibernate, e evoluiu para uma arquitetura em camadas (controller → service → repository), com padrão DAO nas camadas de persistência, autenticação JWT e controle de acesso baseado em perfis.
+A aplicação é uma API REST que gerencia as operações de um marketplace, conectando clientes e vendedores. O projeto iniciou com o **Mapeamento Objeto-Relacional (ORM)** de um modelo de dados desenvolvido na disciplina de Banco de Dados I, utilizando JPA/Hibernate, e evoluiu para uma arquitetura em camadas (controller → service → repository), com autenticação JWT, controle de acesso baseado em perfis e validação de propriedade dos recursos.
 
 ---
 
@@ -14,9 +14,10 @@ A aplicação é uma API REST que gerencia as operações de um marketplace, con
 
 * **Linguagem:** Java 17+
 * **Framework:** Spring Boot
-* **Persistência:** JPA / Hibernate
-* **Banco de dados:** PostgreSQL
+* **Persistência:** Spring Data JPA / Hibernate
+* **Banco de dados:** PostgreSQL (via Docker Compose)
 * **Segurança:** Spring Security com autenticação JWT (jjwt)
+* **Mapeamento DTO:** MapStruct
 * **Documentação:** Swagger / OpenAPI (springdoc)
 * **Build Tool:** Maven
 
@@ -24,32 +25,60 @@ A aplicação é uma API REST que gerencia as operações de um marketplace, con
 
 ## 🏗️ Estrutura e Padrões Implementados
 
-### 1. Camada de Modelo (Entities)
-Entidades mapeadas com as anotações padrão do JPA (`@Entity`, `@Table`, `@Id`, `@GeneratedValue`, `@Column`), incluindo implementação de `equals()`, `hashCode()` e `toString()`.
+### 1. Camada de Modelo (`model`)
+Entidades JPA com `equals()`/`hashCode()` baseados apenas no identificador e `toString()` sem relacionamentos, evitando recursão infinita entre entidades bidirecionais.
 
-### 2. Camada de Persistência (DAO / Repository)
-* **Interface base:** `br.edu.ifpb.es.daw.dao.DAO`
-* **Implementação abstrata:** `br.edu.ifpb.es.daw.dao.impl.AbstractDAOImpl`
-* Repositórios Spring Data por entidade.
+### 2. Camada de Persistência (`repository`)
+Repositórios Spring Data por entidade, com consultas JPQL para filtros opcionais e listagens restritas ao usuário logado.
 
-### 3. Camada de Serviço (Services)
-Regras de negócio centralizadas nos serviços de cada entidade (ex.: `CupomService`, `DevolucaoService`, `ProdutoService`), incluindo validações de negócio como o fluxo de estados das devoluções (PENDENTE → APROVADA/REJEITADA).
+### 3. Camada de Serviço (`service`)
+Todas as regras de negócio ficam nos serviços: cálculo do valor do pedido, controle de estoque, transições de status, unicidade de dados e verificação de que o usuário logado é dono do recurso (`UsuarioAutenticadoService`).
 
-### 4. Camada REST (Controllers)
-Controllers REST por entidade, com DTOs de requisição e resposta, paginação nas listagens, endpoints de busca com filtragem por parâmetros opcionais (JPQL) e documentação Swagger (`@Operation`, `@Schema`).
+### 4. Camada REST (`rest`)
+Controllers finos, DTOs de requisição e resposta, paginação nas listagens, documentação Swagger e tratamento global de erros no padrão `ProblemDetail`.
 
 ### 5. Segurança e Autenticação
 * **Login:** `POST /auth/login` retorna um token JWT.
-* **Filtro JWT:** `JwtAuthenticationFilter` para autenticação stateless de cada requisição.
-* **Controle de acesso:** `@PreAuthorize` em todos os endpoints:
-  * **ADMIN:** acesso total ao sistema.
-  * **VENDEDOR:** gerencia seus produtos e dados permitidos.
-  * **CLIENTE:** realiza pedidos, avaliações e gerencia seu perfil.
-* Rotas públicas: `/auth/login`, cadastro de clientes e vendedores (`POST /clientes`, `POST /vendedores`) e Swagger.
+* **Filtro JWT:** `JwtAuthenticationFilter` autentica cada requisição de forma stateless.
+* **Perfis:** `ADMIN`, `VENDEDOR` e `CLIENTE`, verificados com `@PreAuthorize`.
+* **Propriedade:** além do perfil, a API verifica se o recurso pertence ao usuário logado (um cliente só vê e altera os próprios pedidos, endereços, carrinho e avaliações; um vendedor só altera os próprios produtos e só acessa pedidos que contêm produtos seus).
+* **Rotas públicas:** `/auth/login`, `POST /clientes`, `POST /vendedores` e Swagger.
 
 ### 6. Seed de Dados
-* **Admin padrão** criado automaticamente no primeiro boot da aplicação.
-* Endpoints `POST /seed/popular` e de limpeza do banco (restritos a ADMIN) para popular e limpar os dados de teste.
+* **Admin padrão** criado automaticamente no primeiro boot.
+* `POST /seed/popular`, `DELETE /seed/limpar` e `POST /seed/resetar` (restritos a ADMIN) geram dados de teste coerentes com as regras de negócio.
+
+---
+
+## 🔄 Fluxo de Compra
+
+| Etapa | Endpoint | Quem | Regra |
+| :--- | :--- | :--- | :--- |
+| 1. Criar pedido | `POST /pedidos` | Cliente | Cupom precisa estar ATIVO e dentro da validade. Pedido nasce `CRIADO` com total zero. |
+| 2. Adicionar itens | `POST /itens-pedido` | Cliente | Só em pedido `CRIADO`. Preço vem do produto. Quantidade ≤ estoque. Total é recalculado (itens − desconto do cupom). |
+| 3. Confirmar | `PATCH /pedidos/{id}/fechar` | Cliente | Precisa ter itens. Baixa o estoque. Status `CONFIRMADO`. |
+| 4. Pagar | `POST /pagamentos` | Cliente | Só pedido `CONFIRMADO`. Valor pago = total do pedido. Status `PENDENTE`. |
+| 5. Aprovar pagamento | `PATCH /pagamentos/{id}/confirmar` | Vendedor/Admin | Só pagamento `PENDENTE` → `APROVADO`. |
+| 6. Enviar | `POST /entregas` | Vendedor/Admin | Só com pagamento `APROVADO`. Uma entrega por pedido. Começa `EMBALADO`. |
+| 7. Atualizar entrega | `PATCH /entregas/{id}/status` | Vendedor/Admin | Status só avança: `EMBALADO` → `EM_TRANSITO` → `SAIU_PARA_ENTREGA` → `ENTREGUE`. |
+| 8. Avaliar | `POST /avaliacoes` | Cliente | Só produtos de pedidos `CONFIRMADOS`, uma avaliação por produto. |
+| 9. Devolver | `POST /devolucoes` | Cliente | Só pedido `ENTREGUE`, uma devolução ativa por pedido. |
+| 10. Aprovar devolução | `PATCH /devolucoes/{id}/aprovar` | Vendedor/Admin | Pedido vira `DEVOLVIDO`, pagamento `ESTORNADO` e o estoque é devolvido. |
+
+**Cancelamento:** `PATCH /pedidos/{id}/cancelar` só é permitido para pedidos `CRIADOS` ou `CONFIRMADOS` que ainda não foram enviados. O estoque é devolvido e o pagamento vira `ESTORNADO` (se aprovado) ou `RECUSADO` (se pendente).
+
+---
+
+## ❗ Códigos de Resposta
+
+| Código | Quando |
+| :--- | :--- |
+| `400` | Dados inválidos (validação, JSON malformado, parâmetros incorretos) |
+| `401` | Sem token, token inválido/expirado ou login incorreto |
+| `403` | Perfil sem permissão ou recurso de outro usuário |
+| `404` | Entidade não encontrada |
+| `409` | Duplicidade (e-mail, CNPJ, código) ou registro em uso por outros dados |
+| `422` | Operação não permitida no estado atual (ex.: pagar pedido não confirmado) |
 
 ---
 
@@ -60,23 +89,30 @@ Controllers REST por entidade, com DTOs de requisição e resposta, paginação 
 | E-mail | `admin@marketplace.com` |
 | Senha | `admin123` |
 
+Após `POST /seed/popular`, também existem `cliente1@email.com` … `cliente50@email.com` e `vendedor1@eletronicos.com` … (senha `senha123`).
+
 ---
 
 ## ⚙️ Configuração do Ambiente
 
-O arquivo `src/main/resources/application.properties` **não está versionado** (protegido no `.gitignore` para evitar exposição de credenciais). Ao clonar o projeto, crie esse arquivo com as configurações do seu PostgreSQL local (URL, usuário e senha do banco).
+O arquivo `src/main/resources/application.properties` **não é versionado**. Crie-o a partir do modelo:
+
+```bash
+cp application.properties.example src/main/resources/application.properties
+```
+
+O modelo já aponta para o PostgreSQL do `docker-compose.yml` (porta `5433`, banco `marketplace`, usuário e senha `postgres`). Os valores podem ser sobrescritos pelas variáveis de ambiente `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` e `JWT_EXPIRATION`.
 
 ---
 
 ## ▶️ Como Executar
 
-1. Configure o `application.properties` com o seu PostgreSQL.
-2. Suba a aplicação: `mvn spring-boot:run`.
-3. Verifique no console a mensagem de sucesso e a criação do admin padrão.
-4. Acesse o Swagger: `http://localhost:8080/swagger-ui/index.html`.
-5. Faça login em `POST /auth/login` com as credenciais do admin padrão.
-6. Copie o token retornado e clique no botão **Authorize** no topo do Swagger (esquema `bearer-jwt`).
-7. Use `POST /seed/popular` para carregar dados de teste.
+1. Suba o banco: `docker compose up -d`
+2. Crie o `application.properties` (seção acima).
+3. Suba a aplicação: `mvn spring-boot:run`
+4. Acesse o Swagger: `http://localhost:8080/swagger-ui/index.html`
+5. Faça login em `POST /auth/login` com o admin padrão, copie o token e clique em **Authorize**.
+6. Use `POST /seed/popular` para carregar dados de teste.
 
 ---
 
