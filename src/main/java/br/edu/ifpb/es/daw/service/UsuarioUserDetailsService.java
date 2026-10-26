@@ -22,7 +22,7 @@ public class UsuarioUserDetailsService implements UserDetailsService {
         return User.builder()
                 .username(usuario.getEmail())
                 .password(usuario.getSenha())
-                .authorities(usuario.getRole().name()) // PADRÃO: ADMIN, CLIENTE, VENDEDOR (Sem prefixo ROLE_)
+                .authorities(usuario.getRole().name())
                 .accountLocked(!usuario.isAtivo())
                 .build();
     }
