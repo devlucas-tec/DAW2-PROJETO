@@ -5,6 +5,7 @@ import br.edu.ifpb.es.daw.rest.dto.request.EnderecoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.EnderecoResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface EnderecoMapper {
@@ -16,4 +17,7 @@ public interface EnderecoMapper {
     @Mapping(target = "cliente", ignore = true)
     Endereco from(EnderecoRequestDTO dto);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "cliente", ignore = true)
+    void atualizar(EnderecoRequestDTO dto, @MappingTarget Endereco endereco);
 }

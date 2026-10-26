@@ -1,13 +1,11 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.ItemPedidoMapper;
-import br.edu.ifpb.es.daw.model.ItemPedido;
-import br.edu.ifpb.es.daw.model.ItemPedidoId;
+import br.edu.ifpb.es.daw.mapper.PedidoMapper;
 import br.edu.ifpb.es.daw.model.Pedido;
-import br.edu.ifpb.es.daw.model.Produto;
 import br.edu.ifpb.es.daw.rest.dto.request.ItemPedidoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ItemPedidoResponseDTO;
+import br.edu.ifpb.es.daw.rest.dto.response.PedidoResponseDTO;
 import br.edu.ifpb.es.daw.service.ItemPedidoService;
 import br.edu.ifpb.es.daw.service.PedidoService;
 import br.edu.ifpb.es.daw.service.ProdutoService;
@@ -24,28 +22,29 @@ import org.springframework.web.bind.annotation.*;
 public class ItemPedidoRestController implements ItemPedidoRestControllerApi {
 
     @Autowired private ItemPedidoMapper mapper;
+    @Autowired private PedidoMapper pedidoMapper;
     @Autowired private ItemPedidoService service;
     @Autowired private PedidoService pedidoService;
     @Autowired private ProdutoService produtoService;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
-    public ResponseEntity<Page<ItemPedidoResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Page<ItemPedidoResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<ItemPedidoResponseDTO> adicionar(@RequestBody @Valid ItemPedidoRequestDTO dto) {
-        ItemPedido obj = mapper.from(dto);
-        Pedido pedido = pedidoService.buscarPorId(dto.getIdPedido())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Pedido", dto.getIdPedido()));
-        Produto produto = produtoService.buscarPorId(dto.getIdProduto())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Produto", dto.getIdProduto()));
-        obj.setId(new ItemPedidoId(dto.getIdPedido(), dto.getIdProduto()));
-        obj.setPedido(pedido);
-        obj.setProduto(produto);
-        return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
+        Pedido pedido = pedidoService.buscarComoDono(dto.getIdPedido());
+        return new ResponseEntity<>(mapper.from(service.adicionar(
+                pedido, produtoService.buscarPorId(dto.getIdProduto()), dto.getQuantidade())), HttpStatus.CREATED);
+    }
+
+    @Override @DeleteMapping("/{idPedido}/{idProduto}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
+    public ResponseEntity<PedidoResponseDTO> remover(@PathVariable Long idPedido, @PathVariable Long idProduto) {
+        Pedido pedido = pedidoService.buscarComoDono(idPedido);
+        return ResponseEntity.ok(pedidoMapper.from(service.remover(pedido, idProduto)));
     }
 }

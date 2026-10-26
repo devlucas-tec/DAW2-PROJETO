@@ -17,5 +17,4 @@ public interface VendedorMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "ativo", ignore = true)
     Vendedor from(VendedorRequestDTO dto);
-
 }

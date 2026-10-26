@@ -18,5 +18,4 @@ public interface AdminMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "ativo", ignore = true)
     Admin from(AdminRequestDTO dto);
-
 }

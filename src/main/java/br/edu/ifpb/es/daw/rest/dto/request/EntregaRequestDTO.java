@@ -1,22 +1,20 @@
 package br.edu.ifpb.es.daw.rest.dto.request;
 
-import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class EntregaRequestDTO {
 
+    @Size(max = 50)
     @Schema(example = "Correios")
     private String transportadora;
 
+    @Size(max = 50)
     @Schema(example = "BR123456789BR")
     private String codigoRastreamento;
-
-    @NotNull
-    @Schema(example = "EMBALADO")
-    private StatusEntrega statusEntrega;
 
     @NotNull
     @Schema(example = "1")

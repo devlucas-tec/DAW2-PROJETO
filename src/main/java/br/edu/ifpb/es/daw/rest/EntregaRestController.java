@@ -1,18 +1,15 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.EntregaMapper;
-import br.edu.ifpb.es.daw.model.Entrega;
-import br.edu.ifpb.es.daw.model.Pedido;
 import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
 import br.edu.ifpb.es.daw.rest.dto.request.EntregaRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.EntregaResponseDTO;
 import br.edu.ifpb.es.daw.service.EntregaService;
-import br.edu.ifpb.es.daw.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,29 +18,23 @@ public class EntregaRestController implements EntregaRestControllerApi {
 
     @Autowired private EntregaMapper mapper;
     @Autowired private EntregaService service;
-    @Autowired private PedidoService pedidoService;
 
     @Override @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<EntregaResponseDTO> adicionar(@RequestBody @Valid EntregaRequestDTO dto) {
-        Entrega obj = mapper.from(dto);
-        Pedido pedido = pedidoService.buscarPorId(dto.getIdPedido())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Pedido", dto.getIdPedido()));
-        obj.setPedido(pedido);
-        return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.from(service.criar(
+                dto.getIdPedido(), dto.getTransportadora(), dto.getCodigoRastreamento())), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<EntregaResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
     @Override @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<EntregaResponseDTO> atualizarStatus(@PathVariable Long id, @RequestParam StatusEntrega status) {
-        return ResponseEntity.ok(mapper.from(service.atualizarStatus(validarExiste(id), status)));
-    }
-
-    private Entrega validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Entrega", id));
+        return ResponseEntity.ok(mapper.from(service.atualizarStatus(id, status)));
     }
 }

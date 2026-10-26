@@ -1,12 +1,10 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
+import br.edu.ifpb.es.daw.mapper.CarrinhoMapper;
 import br.edu.ifpb.es.daw.mapper.ItemCarrinhoMapper;
 import br.edu.ifpb.es.daw.model.Carrinho;
-import br.edu.ifpb.es.daw.model.ItemCarrinho;
-import br.edu.ifpb.es.daw.model.ItemCarrinhoId;
-import br.edu.ifpb.es.daw.model.Produto;
 import br.edu.ifpb.es.daw.rest.dto.request.ItemCarrinhoRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.response.CarrinhoResponseDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ItemCarrinhoResponseDTO;
 import br.edu.ifpb.es.daw.service.CarrinhoService;
 import br.edu.ifpb.es.daw.service.ItemCarrinhoService;
@@ -24,28 +22,29 @@ import org.springframework.web.bind.annotation.*;
 public class ItemCarrinhoRestController implements ItemCarrinhoRestControllerApi {
 
     @Autowired private ItemCarrinhoMapper mapper;
+    @Autowired private CarrinhoMapper carrinhoMapper;
     @Autowired private ItemCarrinhoService service;
     @Autowired private CarrinhoService carrinhoService;
     @Autowired private ProdutoService produtoService;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
-    public ResponseEntity<Page<ItemCarrinhoResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Page<ItemCarrinhoResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<ItemCarrinhoResponseDTO> adicionar(@RequestBody @Valid ItemCarrinhoRequestDTO dto) {
-        ItemCarrinho obj = mapper.from(dto);
-        Carrinho carrinho = carrinhoService.buscarPorId(dto.getIdCarrinho())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Carrinho", dto.getIdCarrinho()));
-        Produto produto = produtoService.buscarPorId(dto.getIdProduto())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Produto", dto.getIdProduto()));
-        obj.setId(new ItemCarrinhoId(dto.getIdCarrinho(), dto.getIdProduto()));
-        obj.setCarrinho(carrinho);
-        obj.setProduto(produto);
-        return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
+        Carrinho carrinho = carrinhoService.buscarPorId(dto.getIdCarrinho());
+        return new ResponseEntity<>(mapper.from(service.adicionar(
+                carrinho, produtoService.buscarPorId(dto.getIdProduto()), dto.getQuantidade())), HttpStatus.CREATED);
+    }
+
+    @Override @DeleteMapping("/{idCarrinho}/{idProduto}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> remover(@PathVariable Long idCarrinho, @PathVariable Long idProduto) {
+        Carrinho carrinho = carrinhoService.buscarPorId(idCarrinho);
+        return ResponseEntity.ok(carrinhoMapper.from(service.remover(carrinho, idProduto)));
     }
 }

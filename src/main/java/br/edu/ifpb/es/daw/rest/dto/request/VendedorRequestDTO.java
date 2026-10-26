@@ -10,22 +10,28 @@ import lombok.Data;
 public class VendedorRequestDTO {
 
     @NotBlank
+    @Size(max = 100)
     @Schema(example = "Carlos Andrade")
     private String nome;
 
     @NotBlank
+    @Size(max = 150)
     @Schema(example = "Tech Store Ltda")
     private String razaoSocial;
 
     @NotBlank
+    @Size(max = 18)
     @Schema(example = "12.345.678/0001-99")
     private String cnpjCpf;
 
-    @NotBlank @Email
+    @NotBlank
+    @Email
+    @Size(max = 100)
     @Schema(example = "techstore@email.com")
     private String email;
 
-    @NotBlank @Size(min = 6)
+    @NotBlank
+    @Size(min = 6)
     @Schema(example = "senha123")
     private String senha;
 }

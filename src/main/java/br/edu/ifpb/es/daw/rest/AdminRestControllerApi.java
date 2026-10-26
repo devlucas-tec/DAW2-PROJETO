@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.rest;
 
 import br.edu.ifpb.es.daw.rest.dto.request.AdminRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.AdminUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.AdminResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,8 +22,8 @@ public interface AdminRestControllerApi {
     @Operation(summary = "Buscar admin por ID")
     ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id);
 
-    @Operation(summary = "Atualizar admin")
-    ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody AdminRequestDTO dto);
+    @Operation(summary = "Atualizar admin (apenas os campos enviados são alterados)")
+    ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody AdminUpdateDTO dto);
 
     @Operation(summary = "Remover admin")
     ResponseEntity<Void> remover(@PathVariable Long id);

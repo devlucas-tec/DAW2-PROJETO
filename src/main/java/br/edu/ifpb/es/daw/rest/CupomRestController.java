@@ -1,8 +1,6 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.CupomMapper;
-import br.edu.ifpb.es.daw.model.Cupom;
 import br.edu.ifpb.es.daw.model.enums.StatusCupom;
 import br.edu.ifpb.es.daw.rest.dto.request.CupomRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.CupomResponseDTO;
@@ -17,20 +15,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cupons")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class CupomRestController implements CupomRestControllerApi {
 
     @Autowired private CupomMapper mapper;
     @Autowired private CupomService service;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<Page<CupomResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<Page<CupomResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @GetMapping("/buscar")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<CupomResponseDTO>> buscar(
             @RequestParam(required = false) String codigo,
             @RequestParam(required = false) StatusCupom status,
@@ -39,36 +35,23 @@ public class CupomRestController implements CupomRestControllerApi {
     }
 
     @Override @PostMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<CupomResponseDTO> adicionar(@RequestBody @Valid CupomRequestDTO dto) {
-        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto), dto.getStatus())), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<CupomResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
     @Override @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<CupomResponseDTO> atualizar(@PathVariable Long id,
-                                                      @RequestBody @Valid CupomRequestDTO dto) {
-        Cupom obj = validarExiste(id);
-        Cupom atualizado = mapper.from(dto);
-        atualizado.setId(obj.getId());
-        return ResponseEntity.ok(mapper.from(service.atualizar(atualizado)));
+    public ResponseEntity<CupomResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CupomRequestDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, mapper.from(dto), dto.getStatus())));
     }
 
     @Override @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Cupom validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cupom", id));
     }
 }

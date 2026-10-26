@@ -1,9 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.AdminMapper;
-import br.edu.ifpb.es.daw.model.Admin;
 import br.edu.ifpb.es.daw.rest.dto.request.AdminRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.AdminUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.AdminResponseDTO;
 import br.edu.ifpb.es.daw.service.AdminService;
 import jakarta.validation.Valid;
@@ -16,48 +15,35 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class AdminRestController implements AdminRestControllerApi {
 
     @Autowired private AdminMapper mapper;
     @Autowired private AdminService service;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<Page<AdminResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<Page<AdminResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<AdminResponseDTO> adicionar(@RequestBody @Valid AdminRequestDTO dto) {
-        Admin novo = mapper.from(dto);
-        return new ResponseEntity<>(mapper.from(service.criar(novo, dto.getSenha())), HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto), dto.getSenha())), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<AdminResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
     @Override @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AdminRequestDTO dto) {
-        Admin obj = validarExiste(id);
-        obj.setEmail(dto.getEmail());
-        return ResponseEntity.ok(mapper.from(service.atualizar(obj, dto.getSenha())));
+    public ResponseEntity<AdminResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid AdminUpdateDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, dto)));
     }
 
     @Override @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Admin validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Admin", id));
     }
 }

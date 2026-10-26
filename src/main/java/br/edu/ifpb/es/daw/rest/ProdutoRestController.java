@@ -1,14 +1,13 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.ProdutoMapper;
 import br.edu.ifpb.es.daw.model.Categoria;
-import br.edu.ifpb.es.daw.model.Produto;
 import br.edu.ifpb.es.daw.model.Vendedor;
 import br.edu.ifpb.es.daw.rest.dto.request.ProdutoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ProdutoResponseDTO;
 import br.edu.ifpb.es.daw.service.CategoriaService;
 import br.edu.ifpb.es.daw.service.ProdutoService;
+import br.edu.ifpb.es.daw.service.UsuarioAutenticadoService;
 import br.edu.ifpb.es.daw.service.VendedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +27,11 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
     @Autowired private ProdutoService service;
     @Autowired private CategoriaService categoriaService;
     @Autowired private VendedorService vendedorService;
+    @Autowired private UsuarioAutenticadoService usuarioAutenticado;
 
     @Override @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
-    public ResponseEntity<Page<ProdutoResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<Page<ProdutoResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
@@ -44,56 +43,35 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
             @RequestParam(required = false) BigDecimal precoMin,
             @RequestParam(required = false) BigDecimal precoMax,
             @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(
-                service.filtrar(nome, idCategoria, precoMin, precoMax, page).map(mapper::from)
-        );
+        return ResponseEntity.ok(service.filtrar(nome, idCategoria, precoMin, precoMax, page).map(mapper::from));
     }
 
     @Override @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<ProdutoResponseDTO> adicionar(@RequestBody @Valid ProdutoRequestDTO dto) {
-        Produto obj = mapper.from(dto);
-        Categoria categoria = categoriaService.buscarPorId(dto.getIdCategoria())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria", dto.getIdCategoria()));
-        Vendedor vendedor = vendedorService.buscarPorId(dto.getIdVendedor())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Vendedor", dto.getIdVendedor()));
-        obj.setCategoria(categoria);
-        obj.setVendedor(vendedor);
-        return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
+        Long idVendedor = usuarioAutenticado.resolverIdUsuario(dto.getIdVendedor(), "idVendedor");
+        Vendedor vendedor = vendedorService.buscarPorId(idVendedor);
+        Categoria categoria = categoriaService.buscarPorId(dto.getIdCategoria());
+        return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto), categoria, vendedor)), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<ProdutoResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
     @Override @PatchMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
-    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id,
-                                                        @RequestBody @Valid ProdutoRequestDTO dto) {
-        Produto obj = validarExiste(id);
-        obj.setNome(dto.getNome());
-        obj.setDescricao(dto.getDescricao());
-        obj.setPreco(dto.getPreco());
-        obj.setEstoque(dto.getEstoque());
-        if (dto.getIdCategoria() != null) {
-            Categoria categoria = categoriaService.buscarPorId(dto.getIdCategoria())
-                    .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria", dto.getIdCategoria()));
-            obj.setCategoria(categoria);
-        }
-        return ResponseEntity.ok(mapper.from(service.atualizar(obj)));
+    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ProdutoRequestDTO dto) {
+        Categoria categoria = categoriaService.buscarPorId(dto.getIdCategoria());
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, mapper.from(dto), categoria)));
     }
 
     @Override @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Produto validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Produto", id));
     }
 }

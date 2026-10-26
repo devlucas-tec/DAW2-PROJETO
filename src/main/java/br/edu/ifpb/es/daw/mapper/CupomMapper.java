@@ -15,5 +15,4 @@ public interface CupomMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "pedidos", ignore = true)
     Cupom from(CupomRequestDTO dto);
-
 }

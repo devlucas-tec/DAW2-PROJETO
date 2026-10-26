@@ -1,15 +1,14 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.PedidoMapper;
 import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.model.Cupom;
-import br.edu.ifpb.es.daw.model.Pedido;
 import br.edu.ifpb.es.daw.rest.dto.request.PedidoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.PedidoResponseDTO;
 import br.edu.ifpb.es.daw.service.ClienteService;
 import br.edu.ifpb.es.daw.service.CupomService;
 import br.edu.ifpb.es.daw.service.PedidoService;
+import br.edu.ifpb.es.daw.service.UsuarioAutenticadoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,56 +25,45 @@ public class PedidoRestController implements PedidoRestControllerApi {
     @Autowired private PedidoService service;
     @Autowired private ClienteService clienteService;
     @Autowired private CupomService cupomService;
+    @Autowired private UsuarioAutenticadoService usuarioAutenticado;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
-    public ResponseEntity<Page<PedidoResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
+    public ResponseEntity<Page<PedidoResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<PedidoResponseDTO> adicionar(@RequestBody @Valid PedidoRequestDTO dto) {
-        Pedido obj = mapper.from(dto);
-        Cliente cliente = clienteService.buscarPorId(dto.getIdCliente())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", dto.getIdCliente()));
-        obj.setCliente(cliente);
-        if (dto.getIdCupom() != null) {
-            Cupom cupom = cupomService.buscarPorId(dto.getIdCupom())
-                    .orElseThrow(() -> new EntidadeNaoEncontradaException("Cupom", dto.getIdCupom()));
-            obj.setCupom(cupom);
-        }
-        return new ResponseEntity<>(mapper.from(service.criar(obj)), HttpStatus.CREATED);
+        Long idCliente = usuarioAutenticado.resolverIdUsuario(dto.getIdCliente(), "idCliente");
+        Cliente cliente = clienteService.buscarPorId(idCliente);
+        Cupom cupom = dto.getIdCupom() != null ? cupomService.buscarPorId(dto.getIdCupom()) : null;
+        return new ResponseEntity<>(mapper.from(service.criar(cliente, cupom)), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<PedidoResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarComAcesso(id)));
     }
 
     @Override @PatchMapping("/{id}/fechar")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<PedidoResponseDTO> fechar(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(service.fechar(validarExiste(id))));
+        return ResponseEntity.ok(mapper.from(service.fechar(id)));
     }
 
     @Override @PatchMapping("/{id}/cancelar")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<PedidoResponseDTO> cancelar(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(service.cancelar(validarExiste(id))));
+        return ResponseEntity.ok(mapper.from(service.cancelar(id)));
     }
 
     @Override @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Pedido validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Pedido", id));
     }
 }

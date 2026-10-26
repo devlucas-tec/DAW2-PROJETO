@@ -9,7 +9,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProdutoMapper {
 
+    @Mapping(target = "idCategoria", source = "categoria.id")
     @Mapping(target = "nomeCategoria", source = "categoria.nome")
+    @Mapping(target = "idVendedor", source = "vendedor.id")
     @Mapping(target = "nomeVendedor", source = "vendedor.razaoSocial")
     ProdutoResponseDTO from(Produto obj);
 
@@ -20,5 +22,4 @@ public interface ProdutoMapper {
     @Mapping(target = "vendedor", ignore = true)
     @Mapping(target = "avaliacoes", ignore = true)
     Produto from(ProdutoRequestDTO dto);
-
 }

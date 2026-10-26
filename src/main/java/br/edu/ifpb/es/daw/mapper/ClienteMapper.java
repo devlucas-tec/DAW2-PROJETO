@@ -20,5 +20,4 @@ public interface ClienteMapper {
     @Mapping(target = "carrinho", ignore = true)
     @Mapping(target = "avaliacoes", ignore = true)
     Cliente from(ClienteRequestDTO dto);
-
 }

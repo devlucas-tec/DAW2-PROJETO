@@ -1,6 +1,8 @@
 package br.edu.ifpb.es.daw.rest.dto.response;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,5 +13,6 @@ public class CarrinhoResponseDTO {
     private LocalDate dataAtualizacao;
     private Long idCliente;
     private String nomeCliente;
+    private BigDecimal valorTotal;
     private List<ItemCarrinhoResponseDTO> itens;
 }

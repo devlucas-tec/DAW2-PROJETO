@@ -20,5 +20,4 @@ public interface AvaliacaoMapper {
     @Mapping(target = "cliente", ignore = true)
     @Mapping(target = "produto", ignore = true)
     Avaliacao from(AvaliacaoRequestDTO dto);
-
 }

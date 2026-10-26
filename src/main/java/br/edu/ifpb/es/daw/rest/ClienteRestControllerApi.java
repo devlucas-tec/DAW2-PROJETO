@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.rest;
 
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.ClienteUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,14 +23,14 @@ public interface ClienteRestControllerApi {
             @RequestParam(defaultValue = "0") int page
     );
 
-    @Operation(summary = "Criar cliente")
+    @Operation(summary = "Cadastrar cliente (público)")
     ResponseEntity<ClienteResponseDTO> adicionar(@RequestBody ClienteRequestDTO dto);
 
     @Operation(summary = "Buscar cliente por ID")
     ResponseEntity<ClienteResponseDTO> recuperarPor(@PathVariable Long id);
 
-    @Operation(summary = "Atualizar cliente")
-    ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody ClienteRequestDTO dto);
+    @Operation(summary = "Atualizar cliente (apenas os campos enviados são alterados)")
+    ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody ClienteUpdateDTO dto);
 
     @Operation(summary = "Remover cliente")
     ResponseEntity<Void> remover(@PathVariable Long id);

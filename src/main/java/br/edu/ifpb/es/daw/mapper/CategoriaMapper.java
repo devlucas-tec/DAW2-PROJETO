@@ -13,5 +13,4 @@ public interface CategoriaMapper {
 
     @Mapping(target = "id", ignore = true)
     Categoria from(CategoriaRequestDTO dto);
-
 }

@@ -1,9 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.VendedorMapper;
-import br.edu.ifpb.es.daw.model.Vendedor;
 import br.edu.ifpb.es.daw.rest.dto.request.VendedorRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.VendedorUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.VendedorResponseDTO;
 import br.edu.ifpb.es.daw.service.VendedorService;
 import jakarta.validation.Valid;
@@ -21,47 +20,33 @@ public class VendedorRestController implements VendedorRestControllerApi {
     @Autowired private VendedorMapper mapper;
     @Autowired private VendedorService service;
 
-    @Override
-    @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
+    @Override @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<Page<VendedorResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
-    @Override
-    @PostMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
+    @Override @PostMapping
     public ResponseEntity<VendedorResponseDTO> adicionar(@RequestBody @Valid VendedorRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
 
-    @Override
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE', 'VENDEDOR')")
+    @Override @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<VendedorResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
-    @Override
-    @PatchMapping("/{id}")
+    @Override @PatchMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
-    public ResponseEntity<VendedorResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid VendedorRequestDTO dto) {
-        Vendedor obj = validarExiste(id);
-        Vendedor atualizado = mapper.from(dto);
-        atualizado.setId(obj.getId());
-        return ResponseEntity.ok(mapper.from(service.atualizar(atualizado)));
+    public ResponseEntity<VendedorResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid VendedorUpdateDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, dto)));
     }
 
-    @Override
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Override @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Vendedor validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Vendedor", id));
     }
 }

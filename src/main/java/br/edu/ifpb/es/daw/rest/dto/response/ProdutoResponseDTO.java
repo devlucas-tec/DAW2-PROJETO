@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.rest.dto.response;
 
 import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Data
@@ -10,6 +11,8 @@ public class ProdutoResponseDTO {
     private String descricao;
     private BigDecimal preco;
     private Integer estoque;
+    private Long idCategoria;
     private String nomeCategoria;
+    private Long idVendedor;
     private String nomeVendedor;
 }

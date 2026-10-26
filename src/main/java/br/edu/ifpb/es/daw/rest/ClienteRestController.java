@@ -1,9 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.ClienteMapper;
-import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.ClienteUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
 import br.edu.ifpb.es.daw.service.ClienteService;
 import jakarta.validation.Valid;
@@ -22,13 +21,13 @@ public class ClienteRestController implements ClienteRestControllerApi {
     @Autowired private ClienteService service;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Page<ClienteResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @GetMapping("/buscar")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Page<ClienteResponseDTO>> buscar(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String email,
@@ -42,29 +41,21 @@ public class ClienteRestController implements ClienteRestControllerApi {
     }
 
     @Override @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<ClienteResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarComAcesso(id)));
     }
 
     @Override @PatchMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
-    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO dto) {
-        Cliente obj = validarExiste(id);
-        obj.setNome(dto.getNome());
-        obj.setEmail(dto.getEmail());
-        obj.setTelefone(dto.getTelefone());
-        return ResponseEntity.ok(mapper.from(service.atualizar(obj)));
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteUpdateDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, dto)));
     }
 
     @Override @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Cliente validarExiste(Long id) {
-        return service.buscarPorId(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", id));
     }
 }

@@ -10,11 +10,13 @@ import lombok.Data;
 public class AdminRequestDTO {
 
     @NotBlank
+    @Size(max = 100)
     @Schema(example = "Admin")
     private String nome;
 
     @NotBlank
     @Email
+    @Size(max = 100)
     @Schema(example = "admin@gmail.com")
     private String email;
 

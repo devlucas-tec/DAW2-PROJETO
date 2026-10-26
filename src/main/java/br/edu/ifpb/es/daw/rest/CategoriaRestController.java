@@ -1,8 +1,6 @@
 package br.edu.ifpb.es.daw.rest;
 
-import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.mapper.CategoriaMapper;
-import br.edu.ifpb.es.daw.model.Categoria;
 import br.edu.ifpb.es.daw.rest.dto.request.CategoriaRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.CategoriaResponseDTO;
 import br.edu.ifpb.es.daw.service.CategoriaService;
@@ -22,42 +20,33 @@ public class CategoriaRestController implements CategoriaRestControllerApi {
     @Autowired private CategoriaService service;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR', 'CLIENTE')")
-    public ResponseEntity<Page<CategoriaResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int page) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
+    public ResponseEntity<Page<CategoriaResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
 
     @Override @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<CategoriaResponseDTO> adicionar(@RequestBody @Valid CategoriaRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(mapper.from(dto))), HttpStatus.CREATED);
     }
 
     @Override @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<CategoriaResponseDTO> recuperarPor(@PathVariable Long id) {
-        return ResponseEntity.ok(mapper.from(validarExiste(id)));
+        return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }
 
     @Override @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<CategoriaResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid CategoriaRequestDTO dto) {
-        Categoria obj = validarExiste(id);
-        Categoria atualizado = mapper.from(dto);
-        atualizado.setId(obj.getId());
-        return ResponseEntity.ok(mapper.from(service.atualizar(atualizado)));
+        return ResponseEntity.ok(mapper.from(service.atualizar(id, mapper.from(dto))));
     }
 
     @Override @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        service.remover(validarExiste(id));
+        service.remover(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Categoria validarExiste(Long id) {
-        return service.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria", id));
     }
 }

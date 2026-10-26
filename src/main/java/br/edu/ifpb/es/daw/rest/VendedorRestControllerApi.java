@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.rest;
 
 import br.edu.ifpb.es.daw.rest.dto.request.VendedorRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.VendedorUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.VendedorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,14 +16,14 @@ public interface VendedorRestControllerApi {
     @Operation(summary = "Listar todos os vendedores")
     ResponseEntity<Page<VendedorResponseDTO>> listar(@RequestParam(defaultValue = "0") int page);
 
-    @Operation(summary = "Criar vendedor")
+    @Operation(summary = "Cadastrar vendedor (público)")
     ResponseEntity<VendedorResponseDTO> adicionar(@RequestBody VendedorRequestDTO dto);
 
     @Operation(summary = "Buscar vendedor por ID")
     ResponseEntity<VendedorResponseDTO> recuperarPor(@PathVariable Long id);
 
-    @Operation(summary = "Atualizar vendedor")
-    ResponseEntity<VendedorResponseDTO> atualizar(@PathVariable Long id, @RequestBody VendedorRequestDTO dto);
+    @Operation(summary = "Atualizar vendedor (apenas os campos enviados são alterados)")
+    ResponseEntity<VendedorResponseDTO> atualizar(@PathVariable Long id, @RequestBody VendedorUpdateDTO dto);
 
     @Operation(summary = "Remover vendedor")
     ResponseEntity<Void> remover(@PathVariable Long id);
