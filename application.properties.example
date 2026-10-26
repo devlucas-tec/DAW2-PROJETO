@@ -3,6 +3,7 @@ spring.application.name=marketplace
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5433/marketplace}
 spring.datasource.username=${DB_USERNAME:postgres}
 spring.datasource.password=${DB_PASSWORD:postgres}
+app.database.create-if-not-exists=${DB_CREATE_IF_NOT_EXISTS:true}
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=true
