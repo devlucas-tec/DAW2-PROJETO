@@ -1,0 +1,14 @@
+spring.application.name=marketplace
+
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5433/marketplace}
+spring.datasource.username=${DB_USERNAME:postgres}
+spring.datasource.password=${DB_PASSWORD:postgres}
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.open-in-view=true
+spring.jpa.show-sql=false
+
+app.jwt.secret=${JWT_SECRET:troque-esta-chave-por-uma-chave-secreta-com-pelo-menos-32-bytes}
+app.jwt.expiration=${JWT_EXPIRATION:86400000}
+
+springdoc.swagger-ui.path=/swagger-ui.html
