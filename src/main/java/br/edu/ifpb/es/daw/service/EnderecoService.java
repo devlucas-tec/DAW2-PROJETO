@@ -1,15 +1,17 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
+import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.model.Endereco;
+import br.edu.ifpb.es.daw.model.Usuario;
+import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.EnderecoRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EnderecoService {
@@ -19,27 +21,40 @@ public class EnderecoService {
     @Autowired
     private EnderecoRepository repository;
 
+    @Autowired
+    private UsuarioAutenticadoService usuarioAutenticado;
+
     @Transactional
-    public Endereco criar(Endereco obj) {
+    public Endereco criar(Endereco obj, Cliente cliente) {
+        obj.setCliente(cliente);
+        obj.setEstado(obj.getEstado().toUpperCase());
         return repository.save(obj);
     }
 
     public Page<Endereco> recuperarTodos(int page) {
+        Usuario usuario = usuarioAutenticado.getUsuario();
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        return repository.findAll(pageable);
+        if (usuario.getRole() == Role.ADMIN) {
+            return repository.findAll(pageable);
+        }
+        return repository.buscarPorCliente(usuario.getId(), pageable);
     }
 
-    public Optional<Endereco> buscarPorId(Long id) {
-        return repository.findById(id);
+    public Endereco buscarPorId(Long id) {
+        Endereco endereco = repository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Endereco", id));
+        usuarioAutenticado.validarProprioUsuario(endereco.getCliente().getId());
+        return endereco;
     }
 
     @Transactional
-    public Endereco atualizar(Endereco obj) {
-        return repository.save(obj);
+    public Endereco atualizar(Endereco endereco) {
+        endereco.setEstado(endereco.getEstado().toUpperCase());
+        return repository.save(endereco);
     }
 
     @Transactional
-    public void remover(Endereco obj) {
-        repository.delete(obj);
+    public void remover(Long id) {
+        repository.delete(buscarPorId(id));
     }
 }

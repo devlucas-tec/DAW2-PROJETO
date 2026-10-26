@@ -1,17 +1,15 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.ClienteRepository;
-import jakarta.transaction.Transactional;
+import br.edu.ifpb.es.daw.rest.dto.request.ClienteUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ClienteService {
@@ -22,46 +20,54 @@ public class ClienteService {
     private ClienteRepository repository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioAutenticadoService usuarioAutenticado;
 
     @Transactional
     public Cliente criar(Cliente obj) {
-        obj.setSenha(passwordEncoder.encode(obj.getSenha()));
+        usuarioService.validarEmailDisponivel(obj.getEmail(), null);
+        obj.setSenha(usuarioService.codificarSenha(obj.getSenha()));
         obj.setRole(Role.CLIENTE);
         return repository.save(obj);
     }
 
-    // listagem simples com paginação (mantida para compatibilidade)
     public Page<Cliente> recuperarTodos(int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        return repository.findAll(pageable);
+        return repository.findAll(PageRequest.of(page, PAGE_SIZE));
     }
 
-    // listagem com filtros + paginação
     public Page<Cliente> filtrar(String nome, String email, int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         return repository.filtrar(
-                nome  != null && nome.isBlank()  ? null : nome,
+                nome != null && nome.isBlank() ? null : nome,
                 email != null && email.isBlank() ? null : email,
-                pageable
+                PageRequest.of(page, PAGE_SIZE)
         );
     }
 
-    public Optional<Cliente> buscarPorId(Long id) {
-        return repository.findById(id);
+    public Cliente buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", id));
     }
 
-    public Optional<Cliente> buscarPorEmail(String email) {
-        return repository.buscarPorEmail(email);
-    }
-
-    @Transactional
-    public Cliente atualizar(Cliente obj) {
-        return repository.save(obj);
+    public Cliente buscarComAcesso(Long id) {
+        usuarioAutenticado.validarProprioUsuario(id);
+        return buscarPorId(id);
     }
 
     @Transactional
-    public void remover(Cliente obj) {
-        repository.delete(obj);
+    public Cliente atualizar(Long id, ClienteUpdateDTO dto) {
+        Cliente cliente = buscarComAcesso(id);
+        usuarioService.atualizarDadosBasicos(cliente, dto.getNome(), dto.getEmail(), dto.getSenha());
+        if (dto.getTelefone() != null) {
+            cliente.setTelefone(dto.getTelefone());
+        }
+        return repository.save(cliente);
+    }
+
+    @Transactional
+    public void remover(Long id) {
+        repository.delete(buscarPorId(id));
+        repository.flush();
     }
 }

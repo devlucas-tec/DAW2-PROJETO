@@ -1,16 +1,21 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
+import br.edu.ifpb.es.daw.model.Categoria;
 import br.edu.ifpb.es.daw.model.Produto;
+import br.edu.ifpb.es.daw.model.Usuario;
+import br.edu.ifpb.es.daw.model.Vendedor;
+import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.ProdutoRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class ProdutoService {
@@ -20,41 +25,63 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository repository;
 
+    @Autowired
+    private UsuarioAutenticadoService usuarioAutenticado;
+
     @Transactional
-    public Produto criar(Produto obj) {
+    public Produto criar(Produto obj, Categoria categoria, Vendedor vendedor) {
+        obj.setCategoria(categoria);
+        obj.setVendedor(vendedor);
         return repository.save(obj);
     }
 
-    // listagem simples com paginação (mantida para compatibilidade)
     public Page<Produto> recuperarTodos(int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        return repository.findAll(pageable);
+        return repository.findAll(PageRequest.of(page, PAGE_SIZE));
     }
 
-    // listagem com filtros + paginação
     public Page<Produto> filtrar(String nome, Long idCategoria,
                                  BigDecimal precoMin, BigDecimal precoMax, int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        if (precoMin != null && precoMax != null && precoMin.compareTo(precoMax) > 0) {
+            throw new IllegalArgumentException("O preço mínimo não pode ser maior que o preço máximo.");
+        }
         return repository.filtrar(
                 nome != null && nome.isBlank() ? null : nome,
                 idCategoria,
                 precoMin,
                 precoMax,
-                pageable
+                PageRequest.of(page, PAGE_SIZE)
         );
     }
 
-    public Optional<Produto> buscarPorId(Long id) {
-        return repository.findById(id);
+    public Produto buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Produto", id));
     }
 
     @Transactional
-    public Produto atualizar(Produto obj) {
-        return repository.save(obj);
+    public Produto atualizar(Long id, Produto dados, Categoria categoria) {
+        Produto produto = buscarPorId(id);
+        validarDono(produto);
+        produto.setNome(dados.getNome());
+        produto.setDescricao(dados.getDescricao());
+        produto.setPreco(dados.getPreco());
+        produto.setEstoque(dados.getEstoque());
+        produto.setCategoria(categoria);
+        return repository.save(produto);
     }
 
     @Transactional
-    public void remover(Produto obj) {
-        repository.delete(obj);
+    public void remover(Long id) {
+        Produto produto = buscarPorId(id);
+        validarDono(produto);
+        repository.delete(produto);
+        repository.flush();
+    }
+
+    private void validarDono(Produto produto) {
+        Usuario usuario = usuarioAutenticado.getUsuario();
+        if (usuario.getRole() != Role.ADMIN && !Objects.equals(produto.getVendedor().getId(), usuario.getId())) {
+            throw new AccessDeniedException("Você só pode alterar os seus próprios produtos.");
+        }
     }
 }

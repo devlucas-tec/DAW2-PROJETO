@@ -1,14 +1,13 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.ConflitoException;
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.model.Carrinho;
 import br.edu.ifpb.es.daw.model.Cliente;
-import br.edu.ifpb.es.daw.model.ItemCarrinho;
 import br.edu.ifpb.es.daw.repository.CarrinhoRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CarrinhoService {
@@ -16,36 +15,29 @@ public class CarrinhoService {
     @Autowired
     private CarrinhoRepository repository;
 
-    @Transactional
-    public Carrinho criar(Carrinho obj) {
-
-        return repository.save(obj);
-    }
-
-    public Optional<Carrinho> buscarPorId(Long id) {
-
-        return repository.findById(id);
-    }
-
-    public Optional<Carrinho> buscarPorCliente(Cliente cliente) {
-        return repository.buscarPorCliente(cliente);
-    }
+    @Autowired
+    private UsuarioAutenticadoService usuarioAutenticado;
 
     @Transactional
-    public Carrinho adicionarItem(Carrinho carrinho, ItemCarrinho item) {
-        item.setCarrinho(carrinho);
-        carrinho.getItens().add(item);
+    public Carrinho criar(Cliente cliente) {
+        if (repository.existsByCliente(cliente)) {
+            throw new ConflitoException("O cliente já possui um carrinho.");
+        }
+        Carrinho carrinho = new Carrinho();
+        carrinho.setCliente(cliente);
         return repository.save(carrinho);
     }
 
-    @Transactional
-    public Carrinho removerItem(Carrinho carrinho, ItemCarrinho item) {
-        carrinho.getItens().remove(item);
-        return repository.save(carrinho);
+    public Carrinho buscarPorId(Long id) {
+        Carrinho carrinho = repository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Carrinho", id));
+        usuarioAutenticado.validarProprioUsuario(carrinho.getCliente().getId());
+        return carrinho;
     }
 
     @Transactional
-    public Carrinho limpar(Carrinho carrinho) {
+    public Carrinho limpar(Long id) {
+        Carrinho carrinho = buscarPorId(id);
         carrinho.getItens().clear();
         return repository.save(carrinho);
     }

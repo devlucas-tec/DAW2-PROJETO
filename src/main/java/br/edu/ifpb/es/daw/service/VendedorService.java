@@ -1,17 +1,18 @@
 package br.edu.ifpb.es.daw.service;
 
+import br.edu.ifpb.es.daw.exception.ConflitoException;
+import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.model.Vendedor;
 import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.VendedorRepository;
-import jakarta.transaction.Transactional;
+import br.edu.ifpb.es.daw.rest.dto.request.VendedorUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class VendedorService {
@@ -22,31 +23,55 @@ public class VendedorService {
     private VendedorRepository repository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioAutenticadoService usuarioAutenticado;
 
     @Transactional
     public Vendedor criar(Vendedor obj) {
-        obj.setSenha(passwordEncoder.encode(obj.getSenha()));
+        usuarioService.validarEmailDisponivel(obj.getEmail(), null);
+        validarCnpjCpfDisponivel(obj.getCnpjCpf(), null);
+        obj.setSenha(usuarioService.codificarSenha(obj.getSenha()));
         obj.setRole(Role.VENDEDOR);
         return repository.save(obj);
     }
 
     public Page<Vendedor> recuperarTodos(int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        return repository.findAll(pageable);
+        return repository.findAll(PageRequest.of(page, PAGE_SIZE));
     }
 
-    public Optional<Vendedor> buscarPorId(Long id) {
-        return repository.findById(id);
-    }
-
-    @Transactional
-    public Vendedor atualizar(Vendedor obj) {
-        return repository.save(obj);
+    public Vendedor buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Vendedor", id));
     }
 
     @Transactional
-    public void remover(Vendedor obj) {
-        repository.delete(obj);
+    public Vendedor atualizar(Long id, VendedorUpdateDTO dto) {
+        usuarioAutenticado.validarProprioUsuario(id);
+        Vendedor vendedor = buscarPorId(id);
+        usuarioService.atualizarDadosBasicos(vendedor, dto.getNome(), dto.getEmail(), dto.getSenha());
+        if (dto.getRazaoSocial() != null) {
+            vendedor.setRazaoSocial(dto.getRazaoSocial());
+        }
+        if (dto.getCnpjCpf() != null) {
+            validarCnpjCpfDisponivel(dto.getCnpjCpf(), vendedor.getId());
+            vendedor.setCnpjCpf(dto.getCnpjCpf());
+        }
+        return repository.save(vendedor);
+    }
+
+    @Transactional
+    public void remover(Long id) {
+        repository.delete(buscarPorId(id));
+        repository.flush();
+    }
+
+    private void validarCnpjCpfDisponivel(String cnpjCpf, Long idAtual) {
+        repository.findByCnpjCpf(cnpjCpf)
+                .filter(existente -> !Objects.equals(existente.getId(), idAtual))
+                .ifPresent(existente -> {
+                    throw new ConflitoException("Já existe um vendedor cadastrado com o CNPJ/CPF '" + cnpjCpf + "'.");
+                });
     }
 }
