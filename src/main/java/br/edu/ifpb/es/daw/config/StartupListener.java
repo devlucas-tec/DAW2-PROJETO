@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StartupListener {
 
-    private static final String ADMIN_EMAIL = "admin@marketplace.com";
-    private static final String ADMIN_SENHA = "admin123";
+    public static final String ADMIN_EMAIL = "admin@marketplace.com";
+    public static final String ADMIN_SENHA = "admin123";
 
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private AdminRepository adminRepository;
@@ -25,9 +25,9 @@ public class StartupListener {
         criarAdminPadraoSeNaoExistir();
 
         System.out.println("\n--------------------------------------------------");
-        System.out.println("✅ Aplicação iniciada com sucesso!");
-        System.out.println("📄 Swagger disponível em: http://localhost:8080/swagger-ui/index.html");
-        System.out.println("👤 Admin padrão: " + ADMIN_EMAIL + " / " + ADMIN_SENHA);
+        System.out.println("Aplicação iniciada com sucesso!");
+        System.out.println("Swagger disponível em: http://localhost:8080/swagger-ui/index.html");
+        System.out.println("Admin padrão: " + ADMIN_EMAIL + " / " + ADMIN_SENHA);
         System.out.println("--------------------------------------------------\n");
     }
 
@@ -39,7 +39,7 @@ public class StartupListener {
             admin.setSenha(passwordEncoder.encode(ADMIN_SENHA));
             admin.setRole(Role.ADMIN);
             adminRepository.save(admin);
-            System.out.println("🔐 Admin padrão criado.");
+            System.out.println("Admin padrão criado.");
         }
     }
 }
