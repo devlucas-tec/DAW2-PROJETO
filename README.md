@@ -95,21 +95,72 @@ Após `POST /seed/popular`, também existem `cliente1@email.com` … `cliente50@
 
 ## ⚙️ Configuração do Ambiente
 
+**Pré-requisitos:** Java 17+ e um PostgreSQL — via **Docker** (opção A) ou **instalado localmente** (opção B).
+
 O arquivo `src/main/resources/application.properties` **não é versionado**. Crie-o a partir do modelo:
 
 ```bash
+# Linux / macOS / Git Bash
+mkdir -p src/main/resources
 cp application.properties.example src/main/resources/application.properties
 ```
 
-O modelo já aponta para o PostgreSQL do `docker-compose.yml` (porta `5433`, banco `marketplace`, usuário e senha `postgres`). Os valores podem ser sobrescritos pelas variáveis de ambiente `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` e `JWT_EXPIRATION`.
+```powershell
+# Windows (PowerShell)
+New-Item -ItemType Directory -Force src\main\resources
+Copy-Item application.properties.example src\main\resources\application.properties
+```
+
+Os valores podem ser sobrescritos pelas variáveis de ambiente `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DB_CREATE_IF_NOT_EXISTS`, `JWT_SECRET` e `JWT_EXPIRATION`.
+
+### Opção A — PostgreSQL com Docker
+
+O modelo já aponta para o PostgreSQL do `docker-compose.yml` (porta `5433`, banco `marketplace`, usuário e senha `postgres`). Nenhuma alteração é necessária; basta subir o container:
+
+```bash
+docker compose up -d
+```
+
+### Opção B — PostgreSQL local (sem Docker)
+
+1. Instale o [PostgreSQL](https://www.postgresql.org/download/) (versão 16 ou superior). No Windows, o instalador já registra um serviço (ex.: `postgresql-x64-18`) que inicia com o sistema. Guarde a senha definida para o usuário `postgres` durante a instalação.
+2. Confirme que o serviço está rodando (Windows: `Get-Service postgresql*`; Linux: `sudo systemctl status postgresql`).
+3. No `application.properties`, ajuste **a porta** (a instalação local usa `5432`) e **a senha** do seu usuário:
+
+   ```properties
+   spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/marketplace}
+   spring.datasource.username=${DB_USERNAME:postgres}
+   spring.datasource.password=${DB_PASSWORD:sua_senha_do_postgres}
+   ```
+
+   > Mantenha uma única linha de cada propriedade. Se `spring.datasource.username` estiver ausente, o driver tenta conectar com o usuário do sistema operacional e a autenticação falha.
+
+   Alternativamente, sem editar o arquivo, defina as variáveis de ambiente antes de subir a aplicação:
+
+   ```powershell
+   $env:DB_URL = "jdbc:postgresql://localhost:5432/marketplace"
+   $env:DB_PASSWORD = "sua_senha_do_postgres"
+   ```
+
+4. **Não é preciso criar o banco `marketplace` manualmente**: com `app.database.create-if-not-exists=true` (padrão), a aplicação o cria na primeira inicialização. Se o seu usuário não tiver permissão de `CREATE DATABASE`, crie-o pelo pgAdmin ou com `CREATE DATABASE marketplace;`.
+
+#### Erros comuns
+
+| Mensagem | Causa / Solução |
+|---|---|
+| `autenticação do tipo senha falhou para o usuário "postgres"` | Senha incorreta em `spring.datasource.password` (ou `DB_PASSWORD`). |
+| `autenticação ... falhou para o usuário "<seu usuário do Windows>"` | Falta a linha `spring.datasource.username`. |
+| `Connection refused` | Serviço do PostgreSQL parado ou porta errada (`5432` local × `5433` Docker). |
+| `Unable to determine Dialect without JDBC metadata` | Consequência de uma das falhas de conexão acima — verifique a primeira causa (`Caused by`) no log. |
+| `Port 8080 was already in use` | Já existe outra instância da API (ou outro programa) usando a porta 8080. |
 
 ---
 
 ## ▶️ Como Executar
 
-1. Suba o banco: `docker compose up -d`
-2. Crie o `application.properties` (seção acima).
-3. Suba a aplicação: `mvn spring-boot:run`
+1. Prepare o banco: **Opção A** (`docker compose up -d`) ou **Opção B** (PostgreSQL local configurado) — seção acima.
+2. Crie/ajuste o `application.properties` (seção acima).
+3. Suba a aplicação: `./mvnw spring-boot:run` (Windows: `.\mvnw.cmd spring-boot:run`)
 4. Acesse o Swagger: `http://localhost:8080/swagger-ui/index.html`
 5. Faça login em `POST /auth/login` com o admin padrão, copie o token e clique em **Authorize**.
 6. Use `POST /seed/popular` para carregar dados de teste.
