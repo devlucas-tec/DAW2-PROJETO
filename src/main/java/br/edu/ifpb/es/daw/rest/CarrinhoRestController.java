@@ -1,7 +1,9 @@
 package br.edu.ifpb.es.daw.rest;
 
 import br.edu.ifpb.es.daw.mapper.CarrinhoMapper;
+import br.edu.ifpb.es.daw.rest.dto.request.AdicionarItemCarrinhoDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.CarrinhoRequestDTO;
+import br.edu.ifpb.es.daw.rest.dto.request.QuantidadeDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.CarrinhoResponseDTO;
 import br.edu.ifpb.es.daw.service.CarrinhoService;
 import br.edu.ifpb.es.daw.service.ClienteService;
@@ -22,6 +24,37 @@ public class CarrinhoRestController implements CarrinhoRestControllerApi {
     @Autowired private CarrinhoService service;
     @Autowired private ClienteService clienteService;
     @Autowired private UsuarioAutenticadoService usuarioAutenticado;
+
+    @Override @GetMapping("/meu")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> meu() {
+        return ResponseEntity.ok(mapper.from(service.meuCarrinho()));
+    }
+
+    @Override @PostMapping("/meu/itens")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> adicionarItem(@RequestBody @Valid AdicionarItemCarrinhoDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.adicionarItem(dto.getIdProduto(), dto.getQuantidade())));
+    }
+
+    @Override @PutMapping("/meu/itens/{idProduto}")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> definirQuantidade(@PathVariable Long idProduto,
+                                                                 @RequestBody @Valid QuantidadeDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.definirQuantidade(idProduto, dto.getQuantidade())));
+    }
+
+    @Override @DeleteMapping("/meu/itens/{idProduto}")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> removerItem(@PathVariable Long idProduto) {
+        return ResponseEntity.ok(mapper.from(service.removerItem(idProduto)));
+    }
+
+    @Override @DeleteMapping("/meu")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<CarrinhoResponseDTO> esvaziar() {
+        return ResponseEntity.ok(mapper.from(service.esvaziarMeuCarrinho()));
+    }
 
     @Override @PostMapping
     public ResponseEntity<CarrinhoResponseDTO> adicionar(@RequestBody @Valid CarrinhoRequestDTO dto) {

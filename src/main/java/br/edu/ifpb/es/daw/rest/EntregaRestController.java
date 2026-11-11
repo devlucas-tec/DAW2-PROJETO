@@ -34,7 +34,9 @@ public class EntregaRestController implements EntregaRestControllerApi {
 
     @Override @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
-    public ResponseEntity<EntregaResponseDTO> atualizarStatus(@PathVariable Long id, @RequestParam StatusEntrega status) {
-        return ResponseEntity.ok(mapper.from(service.atualizarStatus(id, status)));
+    public ResponseEntity<EntregaResponseDTO> atualizarStatus(@PathVariable Long id, @RequestParam StatusEntrega status,
+            @RequestParam(required = false) String transportadora,
+            @RequestParam(required = false) String codigoRastreamento) {
+        return ResponseEntity.ok(mapper.from(service.atualizarStatus(id, status, transportadora, codigoRastreamento)));
     }
 }

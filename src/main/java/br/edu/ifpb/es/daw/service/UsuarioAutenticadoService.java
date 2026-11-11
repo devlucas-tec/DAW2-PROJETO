@@ -7,11 +7,13 @@ import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class UsuarioAutenticadoService {
@@ -20,16 +22,22 @@ public class UsuarioAutenticadoService {
     private UsuarioRepository usuarioRepository;
 
     public Usuario getUsuario() {
+        return getUsuarioOpcional()
+                .orElseThrow(() -> new AccessDeniedException("Usuário não autenticado."));
+    }
+
+    /** Usuário do token, se houver. Usado nos endpoints públicos, que também aceitam token. */
+    public Optional<Usuario> getUsuarioOpcional() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("Usuário não autenticado.");
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return Optional.empty();
         }
-        return usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new AccessDeniedException("Usuário autenticado não encontrado."));
+        return usuarioRepository.findByEmail(authentication.getName());
     }
 
     public boolean isAdmin() {
-        return getUsuario().getRole() == Role.ADMIN;
+        return getUsuarioOpcional().map(usuario -> usuario.getRole() == Role.ADMIN).orElse(false);
     }
 
     public Long resolverIdUsuario(Long idInformado, String campo) {
@@ -63,6 +71,22 @@ public class UsuarioAutenticadoService {
         Usuario usuario = getUsuario();
         if (usuario.getRole() != Role.ADMIN && !Objects.equals(usuario.getId(), pedido.getCliente().getId())) {
             throw new AccessDeniedException("Apenas o cliente dono do pedido pode realizar esta operação.");
+        }
+    }
+
+    /** Só o ADMIN ou o vendedor dono de todos os itens do pedido podem avançar o status. */
+    public void validarVendedorDoPedido(Pedido pedido) {
+        Usuario usuario = getUsuario();
+        if (usuario.getRole() == Role.ADMIN) {
+            return;
+        }
+        boolean dono = usuario.getRole() == Role.VENDEDOR
+                && !pedido.getItens().isEmpty()
+                && pedido.getItens().stream()
+                .map(ItemPedido::getProduto)
+                .allMatch(produto -> Objects.equals(produto.getVendedor().getId(), usuario.getId()));
+        if (!dono) {
+            throw new AccessDeniedException("Apenas o vendedor dos itens deste pedido pode atualizar o seu status.");
         }
     }
 

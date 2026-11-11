@@ -27,10 +27,21 @@ public class AvaliacaoRestController implements AvaliacaoRestControllerApi {
     @Autowired private ProdutoService produtoService;
     @Autowired private UsuarioAutenticadoService usuarioAutenticado;
 
+    /** Com idProduto é público (liberado no SecurityConfiguration); sem idProduto, só ADMIN. */
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
-    public ResponseEntity<Page<AvaliacaoResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> listar(
+            @RequestParam(required = false) Long idProduto,
+            @RequestParam(defaultValue = "0") int page) {
+        Page<AvaliacaoResponseDTO> pagina = idProduto != null
+                ? service.recuperarPorProduto(idProduto, page).map(mapper::from)
+                : service.recuperarTodos(page).map(mapper::from);
+        return ResponseEntity.ok(pagina);
+    }
+
+    @Override @GetMapping("/minhas")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> minhas(@RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarMinhas(page).map(mapper::from));
     }
 
     @Override @PostMapping

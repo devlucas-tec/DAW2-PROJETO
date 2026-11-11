@@ -5,12 +5,16 @@ import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import br.edu.ifpb.es.daw.model.Devolucao;
 import br.edu.ifpb.es.daw.model.Pedido;
+import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
 import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
 import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
 import br.edu.ifpb.es.daw.repository.DevolucaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +23,16 @@ import java.util.List;
 @Service
 public class DevolucaoService {
 
+    private static final int PAGE_SIZE = 10;
+
     @Autowired
     private DevolucaoRepository repository;
 
     @Autowired
     private PedidoService pedidoService;
+
+    @Autowired
+    private PedidoHistoricoService historicoService;
 
     @Autowired
     private UsuarioAutenticadoService usuarioAutenticado;
@@ -42,7 +51,14 @@ public class DevolucaoService {
         devolucao.setPedido(pedido);
         devolucao.setMotivo(motivo);
         devolucao.setStatus(StatusDevolucao.PENDENTE);
+        historicoService.registrar(pedido, EtapaPedido.DEVOLUCAO_SOLICITADA, "Devolução solicitada: " + resumir(motivo));
         return repository.save(devolucao);
+    }
+
+    public Page<Devolucao> recuperarMinhas(int page) {
+        return repository.findByPedidoClienteId(usuarioAutenticado.getUsuario().getId(),
+                PageRequest.of(Math.max(page, 0), PAGE_SIZE,
+                        Sort.by(Sort.Direction.DESC, "dataDevolucao").and(Sort.by(Sort.Direction.DESC, "id"))));
     }
 
     public Devolucao buscarPorId(Long id) {
@@ -63,6 +79,7 @@ public class DevolucaoService {
             pedido.getPagamento().setStatus(StatusPagamento.ESTORNADO);
         }
         devolucao.setStatus(StatusDevolucao.APROVADA);
+        historicoService.registrar(pedido, EtapaPedido.DEVOLVIDO, "Devolução aprovada e pagamento estornado.");
         return repository.save(devolucao);
     }
 
@@ -71,6 +88,7 @@ public class DevolucaoService {
         Devolucao devolucao = buscarPorId(id);
         validarPendente(devolucao, "rejeitada");
         devolucao.setStatus(StatusDevolucao.RECUSADA);
+        historicoService.registrar(devolucao.getPedido(), EtapaPedido.DEVOLUCAO_RECUSADA, "Devolução recusada.");
         return repository.save(devolucao);
     }
 
@@ -79,5 +97,9 @@ public class DevolucaoService {
             throw new EstadoInvalidoException("Devolução só pode ser " + operacao
                     + " se estiver PENDENTE. Status atual: " + devolucao.getStatus());
         }
+    }
+
+    private String resumir(String texto) {
+        return texto.length() <= 200 ? texto : texto.substring(0, 197) + "...";
     }
 }

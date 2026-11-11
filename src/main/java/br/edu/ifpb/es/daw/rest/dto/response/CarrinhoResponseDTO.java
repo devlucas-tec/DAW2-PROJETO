@@ -14,5 +14,7 @@ public class CarrinhoResponseDTO {
     private Long idCliente;
     private String nomeCliente;
     private BigDecimal valorTotal;
+    /** Soma das quantidades de todos os itens. */
+    private int quantidadeItens;
     private List<ItemCarrinhoResponseDTO> itens;
 }

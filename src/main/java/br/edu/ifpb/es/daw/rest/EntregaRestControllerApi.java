@@ -11,5 +11,5 @@ import org.springframework.http.ResponseEntity;
 public interface EntregaRestControllerApi {
     @Operation(summary = "Registrar entrega") ResponseEntity<EntregaResponseDTO> adicionar(EntregaRequestDTO dto);
     @Operation(summary = "Buscar entrega por ID") ResponseEntity<EntregaResponseDTO> recuperarPor(Long id);
-    @Operation(summary = "Atualizar status da entrega") ResponseEntity<EntregaResponseDTO> atualizarStatus(Long id, StatusEntrega status);
+    @Operation(summary = "Avançar o status da entrega (só a próxima etapa; EM_TRANSITO exige transportadora e rastreio)") ResponseEntity<EntregaResponseDTO> atualizarStatus(Long id, StatusEntrega status, String transportadora, String codigoRastreamento);
 }

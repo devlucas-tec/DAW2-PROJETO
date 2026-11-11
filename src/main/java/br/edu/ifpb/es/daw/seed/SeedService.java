@@ -5,11 +5,14 @@ import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import br.edu.ifpb.es.daw.model.*;
 import br.edu.ifpb.es.daw.model.enums.*;
 import br.edu.ifpb.es.daw.repository.*;
+import br.edu.ifpb.es.daw.service.AvaliacaoService;
+import br.edu.ifpb.es.daw.service.PedidoHistoricoService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +23,8 @@ import java.util.List;
 public class SeedService {
 
     private static final int QUANTIDADE = 50;
+    /** Os produtos são distribuídos entre os 10 primeiros vendedores (5 produtos cada). */
+    private static final int VENDEDORES_COM_PRODUTOS = 10;
 
     private final AdminRepository adminRepository;
     private final ClienteRepository clienteRepository;
@@ -30,12 +35,15 @@ public class SeedService {
     private final CupomRepository cupomRepository;
     private final CarrinhoRepository carrinhoRepository;
     private final ItemCarrinhoRepository itemCarrinhoRepository;
+    private final CompraRepository compraRepository;
     private final PedidoRepository pedidoRepository;
+    private final PedidoHistoricoRepository pedidoHistoricoRepository;
     private final ItemPedidoRepository itemPedidoRepository;
     private final PagamentoRepository pagamentoRepository;
     private final EntregaRepository entregaRepository;
     private final DevolucaoRepository devolucaoRepository;
     private final AvaliacaoRepository avaliacaoRepository;
+    private final AvaliacaoService avaliacaoService;
     private final PasswordEncoder passwordEncoder;
     private final StartupListener startupListener;
 
@@ -49,12 +57,15 @@ public class SeedService {
             CupomRepository cupomRepository,
             CarrinhoRepository carrinhoRepository,
             ItemCarrinhoRepository itemCarrinhoRepository,
+            CompraRepository compraRepository,
             PedidoRepository pedidoRepository,
+            PedidoHistoricoRepository pedidoHistoricoRepository,
             ItemPedidoRepository itemPedidoRepository,
             PagamentoRepository pagamentoRepository,
             EntregaRepository entregaRepository,
             DevolucaoRepository devolucaoRepository,
             AvaliacaoRepository avaliacaoRepository,
+            AvaliacaoService avaliacaoService,
             PasswordEncoder passwordEncoder,
             StartupListener startupListener) {
 
@@ -67,12 +78,15 @@ public class SeedService {
         this.cupomRepository = cupomRepository;
         this.carrinhoRepository = carrinhoRepository;
         this.itemCarrinhoRepository = itemCarrinhoRepository;
+        this.compraRepository = compraRepository;
         this.pedidoRepository = pedidoRepository;
+        this.pedidoHistoricoRepository = pedidoHistoricoRepository;
         this.itemPedidoRepository = itemPedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
         this.entregaRepository = entregaRepository;
         this.devolucaoRepository = devolucaoRepository;
         this.avaliacaoRepository = avaliacaoRepository;
+        this.avaliacaoService = avaliacaoService;
         this.passwordEncoder = passwordEncoder;
         this.startupListener = startupListener;
     }
@@ -83,12 +97,15 @@ public class SeedService {
         devolucaoRepository.deleteAllInBatch();
         entregaRepository.deleteAllInBatch();
         pagamentoRepository.deleteAllInBatch();
+        pedidoHistoricoRepository.deleteAllInBatch();
         itemPedidoRepository.deleteAllInBatch();
         pedidoRepository.deleteAllInBatch();
+        compraRepository.deleteAllInBatch();
         itemCarrinhoRepository.deleteAllInBatch();
         carrinhoRepository.deleteAllInBatch();
         enderecoRepository.deleteAllInBatch();
         cupomRepository.deleteAllInBatch();
+        produtoRepository.removerTodasAsImagens();
         produtoRepository.deleteAllInBatch();
         categoriaRepository.deleteAllInBatch();
         clienteRepository.deleteAll();
@@ -110,10 +127,11 @@ public class SeedService {
         List<Cliente> clientes = criarClientes();
         List<Categoria> categorias = criarCategorias();
         List<Produto> produtos = criarProdutos(categorias, vendedores);
-        criarEnderecos(clientes);
+        List<Endereco> enderecos = criarEnderecos(clientes);
         List<Cupom> cupons = criarCupons();
         criarCarrinhos(clientes, produtos);
-        criarPedidos(clientes, produtos, cupons);
+        criarCompras(clientes, enderecos, produtos, cupons);
+        produtos.forEach(avaliacaoService::atualizarResumoDoProduto);
     }
 
     private void criarAdmins() {
@@ -204,23 +222,37 @@ public class SeedService {
                 "Câmera Digital", "Impressora", "Roteador Wi-Fi", "HD Externo",
                 "Pendrive 64GB", "Webcam HD", "Caixa de Som"
         };
+        // Palavra-chave usada para buscar uma foto real do tipo de produto (loremflickr.com).
+        String[] temasImagem = {
+                "laptop", "headphones", "tshirt", "sneakers",
+                "computermouse", "keyboard", "monitor", "harddrive",
+                "officechair", "headset", "smartphone", "tablet", "smartwatch",
+                "camera", "printer", "router", "harddrive",
+                "usb", "webcam", "speaker"
+        };
 
         List<Produto> produtos = new ArrayList<>();
         for (int i = 1; i <= QUANTIDADE; i++) {
-            String nomeProduto = nomesProduto[(i - 1) % nomesProduto.length];
+            int tipo = (i - 1) % nomesProduto.length;
+            String tema = temasImagem[tipo];
             Produto produto = new Produto();
-            produto.setNome(nomeProduto + " " + i);
-            produto.setDescricao("Descrição detalhada do produto: " + nomeProduto + " - modelo " + i);
+            produto.setNome(nomesProduto[tipo] + " " + i);
+            produto.setDescricao("Descrição detalhada do produto: " + nomesProduto[tipo] + " - modelo " + i);
             produto.setPreco(new BigDecimal("99.90").add(BigDecimal.valueOf(i * 50L)));
-            produto.setEstoque(20 + i);
+            // Alguns produtos com estoque baixo, para o painel do vendedor ter alertas.
+            produto.setEstoque(i % 7 == 0 ? 6 : 20 + i);
+            produto.setImagemUrl(imagem(tema, i));
+            produto.setImagens(new ArrayList<>(List.of(imagem(tema, i + 100), imagem(tema, i + 200))));
+            // Dois anúncios pausados, para demonstrar a diferença entre a vitrine e "meus produtos".
+            produto.setAtivo(i != 13 && i != 37);
             produto.setCategoria(categorias.get((i - 1) % categorias.size()));
-            produto.setVendedor(vendedores.get((i - 1) % vendedores.size()));
+            produto.setVendedor(vendedores.get((i - 1) % VENDEDORES_COM_PRODUTOS));
             produtos.add(produtoRepository.save(produto));
         }
         return produtos;
     }
 
-    private void criarEnderecos(List<Cliente> clientes) {
+    private List<Endereco> criarEnderecos(List<Cliente> clientes) {
         String[] ruas = {
                 "Rua das Flores", "Av. Brasil", "Rua do Comércio", "Alameda Santos",
                 "Av. Paulista", "Rua XV de Novembro", "Rua Sete de Setembro",
@@ -232,6 +264,7 @@ public class SeedService {
         };
         String[] estados = {"PB", "PB", "PE", "RN", "CE", "AL", "SE", "BA", "PI", "MA"};
 
+        List<Endereco> enderecos = new ArrayList<>();
         for (int i = 1; i <= QUANTIDADE; i++) {
             int cidade = (i - 1) % cidades.length;
             Endereco endereco = new Endereco();
@@ -242,8 +275,9 @@ public class SeedService {
             endereco.setCidade(cidades[cidade]);
             endereco.setEstado(estados[cidade]);
             endereco.setCliente(clientes.get(i - 1));
-            enderecoRepository.save(endereco);
+            enderecos.add(enderecoRepository.save(endereco));
         }
+        return enderecos;
     }
 
     private List<Cupom> criarCupons() {
@@ -278,7 +312,11 @@ public class SeedService {
         }
     }
 
-    private void criarPedidos(List<Cliente> clientes, List<Produto> produtos, List<Cupom> cupons) {
+    /**
+     * Cada cliente faz uma compra. Compras de número par têm produtos de dois vendedores e por isso
+     * geram dois pedidos, como no checkout real. O cenário (i % 10) define até onde o pedido avançou.
+     */
+    private void criarCompras(List<Cliente> clientes, List<Endereco> enderecos, List<Produto> produtos, List<Cupom> cupons) {
         MetodoPagamento[] metodos = MetodoPagamento.values();
         String[] transportadoras = {"Correios", "JadLog", "Latam Cargo", "Azul Cargo", "Loggi"};
         String[] comentarios = {
@@ -296,90 +334,155 @@ public class SeedService {
 
         for (int i = 1; i <= QUANTIDADE; i++) {
             Cliente cliente = clientes.get(i - 1);
-            LocalDateTime dataPedido = LocalDateTime.now().minusDays(i);
-
-            Pedido pedido = new Pedido();
-            pedido.setCliente(cliente);
-            pedido.setDataPedido(dataPedido);
-            pedido.setStatus(StatusPedido.CRIADO);
-            if (i % 3 == 0) {
-                pedido.setCupom(cupons.get((i - 1) % 40));
-            }
-            pedido = pedidoRepository.save(pedido);
-
-            adicionarItem(pedido, produtos.get((i - 1) % produtos.size()), 1 + (i % 3));
-            if (i % 2 == 0) {
-                adicionarItem(pedido, produtos.get(i % produtos.size()), 1);
-            }
-            pedido.recalcularValorTotal();
-
+            LocalDateTime data = LocalDateTime.now().minusDays(i).withHour(10).withMinute(0).withSecond(0).withNano(0);
             int cenario = i % 10;
-            if (cenario == 0 || cenario == 5) {
-                pedidoRepository.save(pedido);
-                continue;
+            boolean aguardandoPagamento = cenario == 1 || cenario == 6;
+            MetodoPagamento metodo = aguardandoPagamento
+                    ? (cenario == 1 ? MetodoPagamento.PIX : MetodoPagamento.BOLETO)
+                    : metodos[i % metodos.length];
+            Cupom cupom = i % 3 == 0 ? cupons.get((i - 1) % 40) : null;
+
+            List<Produto> produtosDaCompra = new ArrayList<>(List.of(produtos.get((i - 1) % produtos.size())));
+            List<Integer> quantidades = new ArrayList<>(List.of(1 + (i % 3)));
+            if (i % 2 == 0) {
+                produtosDaCompra.add(produtos.get(i % produtos.size()));
+                quantidades.add(1);
             }
 
-            if (cenario == 4) {
-                pedido.setStatus(StatusPedido.CANCELADO);
-                pedidoRepository.save(pedido);
-                criarPagamento(pedido, metodos[i % metodos.length], StatusPagamento.RECUSADO, dataPedido);
-                continue;
+            BigDecimal subtotalCompra = BigDecimal.ZERO;
+            for (int p = 0; p < produtosDaCompra.size(); p++) {
+                subtotalCompra = subtotalCompra.add(produtosDaCompra.get(p).getPreco().multiply(BigDecimal.valueOf(quantidades.get(p))));
             }
+            BigDecimal descontoCompra = cupom != null ? cupom.getValorDesconto().min(subtotalCompra) : BigDecimal.ZERO;
 
-            pedido.setStatus(StatusPedido.CONFIRMADO);
-            pedido.getItens().forEach(item ->
-                    item.getProduto().setEstoque(item.getProduto().getEstoque() - item.getQuantidade()));
-            pedidoRepository.save(pedido);
+            Compra compra = new Compra();
+            compra.setCodigo(String.format("CPSEED%04d", i));
+            compra.setCliente(cliente);
+            compra.setCupom(cupom);
+            compra.setMetodoPagamento(metodo);
+            compra.setDataCompra(data);
+            compra.setValorSubtotal(subtotalCompra);
+            compra.setValorDesconto(descontoCompra);
+            compra = compraRepository.save(compra);
 
-            if (cenario == 1 || cenario == 6) {
-                criarPagamento(pedido, metodos[i % metodos.length], StatusPagamento.PENDENTE, dataPedido);
-                continue;
+            BigDecimal descontoDistribuido = BigDecimal.ZERO;
+            BigDecimal totalCompra = BigDecimal.ZERO;
+            for (int p = 0; p < produtosDaCompra.size(); p++) {
+                Produto produto = produtosDaCompra.get(p);
+                int quantidade = quantidades.get(p);
+                boolean ultimo = p == produtosDaCompra.size() - 1;
+                BigDecimal subtotalPedido = produto.getPreco().multiply(BigDecimal.valueOf(quantidade));
+                BigDecimal descontoPedido = ultimo
+                        ? descontoCompra.subtract(descontoDistribuido)
+                        : descontoCompra.multiply(subtotalPedido).divide(subtotalCompra, 2, RoundingMode.HALF_UP);
+                descontoDistribuido = descontoDistribuido.add(descontoPedido);
+
+                Pedido pedido = new Pedido();
+                pedido.setCompra(compra);
+                pedido.setCliente(cliente);
+                pedido.setCupom(cupom);
+                pedido.setDataPedido(data);
+                pedido.setEnderecoEntrega(EnderecoEntrega.de(enderecos.get(i - 1)));
+                pedido.setValorDesconto(descontoPedido);
+                pedido.setStatus(StatusPedido.CONFIRMADO);
+                pedido = pedidoRepository.save(pedido);
+                adicionarItem(pedido, produto, quantidade);
+                pedido.recalcularValorTotal();
+                historico(pedido, EtapaPedido.PEDIDO_CONFIRMADO, data, "Pedido realizado na compra " + compra.getCodigo() + ".", cliente);
+
+                String transportadora = transportadoras[i % transportadoras.length];
+                avancarPedido(pedido, cenario, metodo, data, transportadora, cliente, produto.getVendedor(), motivos[i % motivos.length]);
+                pedido = pedidoRepository.save(pedido);
+                compra.getPedidos().add(pedido);
+                totalCompra = totalCompra.add(pedido.getValorTotal());
+
+                if (p == 0 && (cenario == 3 || cenario == 8)) {
+                    Avaliacao avaliacao = new Avaliacao();
+                    avaliacao.setCliente(cliente);
+                    avaliacao.setProduto(produto);
+                    avaliacao.setNota(1 + (i % 5));
+                    avaliacao.setComentario(comentarios[i % comentarios.length]);
+                    avaliacao.setDataAvaliacao(data.plusDays(8));
+                    avaliacaoRepository.save(avaliacao);
+                }
             }
-
-            Pagamento pagamento = criarPagamento(pedido, metodos[i % metodos.length], StatusPagamento.APROVADO, dataPedido);
-            String transportadora = transportadoras[i % transportadoras.length];
-
-            if (cenario == 2 || cenario == 7) {
-                criarEntrega(pedido, transportadora, i, StatusEntrega.EM_TRANSITO, dataPedido);
-                continue;
-            }
-
-            criarEntrega(pedido, transportadora, i, StatusEntrega.ENTREGUE, dataPedido);
-            Produto produtoAvaliado = pedido.getItens().get(0).getProduto();
-
-            if (cenario == 9) {
-                Devolucao devolucao = new Devolucao();
-                devolucao.setPedido(pedido);
-                devolucao.setMotivo(motivos[i % motivos.length]);
-                devolucao.setStatus(StatusDevolucao.APROVADA);
-                devolucao.setDataDevolucao(dataPedido.plusDays(10));
-                devolucaoRepository.save(devolucao);
-                pedido.getItens().forEach(item ->
-                        item.getProduto().setEstoque(item.getProduto().getEstoque() + item.getQuantidade()));
-                pedido.setStatus(StatusPedido.DEVOLVIDO);
-                pagamento.setStatus(StatusPagamento.ESTORNADO);
-                pedidoRepository.save(pedido);
-                pagamentoRepository.save(pagamento);
-                continue;
-            }
-
-            if (cenario == 8) {
-                Devolucao devolucao = new Devolucao();
-                devolucao.setPedido(pedido);
-                devolucao.setMotivo(motivos[i % motivos.length]);
-                devolucao.setStatus(StatusDevolucao.PENDENTE);
-                devolucao.setDataDevolucao(dataPedido.plusDays(9));
-                devolucaoRepository.save(devolucao);
-            }
-
-            Avaliacao avaliacao = new Avaliacao();
-            avaliacao.setCliente(cliente);
-            avaliacao.setProduto(produtoAvaliado);
-            avaliacao.setNota(1 + (i % 5));
-            avaliacao.setComentario(comentarios[i % comentarios.length]);
-            avaliacao.setDataAvaliacao(dataPedido.plusDays(8));
-            avaliacaoRepository.save(avaliacao);
+            compra.setValorTotal(totalCompra);
+            compraRepository.save(compra);
         }
+    }
+
+    private void avancarPedido(Pedido pedido, int cenario, MetodoPagamento metodo, LocalDateTime data,
+                               String transportadora, Cliente cliente, Vendedor vendedor, String motivo) {
+        boolean cancelado = cenario == 0;
+        boolean aguardandoPagamento = cenario == 1 || cenario == 6;
+
+        Pagamento pagamento = criarPagamento(pedido, metodo,
+                cancelado ? StatusPagamento.RECUSADO : aguardandoPagamento ? StatusPagamento.PENDENTE : StatusPagamento.APROVADO,
+                data);
+
+        if (cancelado) {
+            pedido.setStatus(StatusPedido.CANCELADO);
+            historico(pedido, EtapaPedido.CANCELADO, data.plusHours(2), "Pedido cancelado pelo cliente.", cliente);
+            return;
+        }
+        baixarEstoque(pedido);
+        if (aguardandoPagamento) {
+            return;
+        }
+        historico(pedido, EtapaPedido.PAGAMENTO_APROVADO, data.plusHours(1), "Pagamento via " + metodo + " confirmado.", vendedor);
+        if (cenario == 5) {
+            return;
+        }
+
+        StatusEntrega statusFinal = switch (cenario) {
+            case 2 -> StatusEntrega.EMBALADO;
+            case 7 -> StatusEntrega.EM_TRANSITO;
+            case 4 -> StatusEntrega.SAIU_PARA_ENTREGA;
+            default -> StatusEntrega.ENTREGUE;
+        };
+        Entrega entrega = new Entrega();
+        entrega.setPedido(pedido);
+        entrega.setTransportadora(transportadora);
+        entrega.setCodigoRastreamento("BR" + String.format("%09d", pedido.getId()) + "BR");
+        entrega.setStatusEntrega(statusFinal);
+        entrega.setDataEntregaPrevista(data.plusDays(9));
+        historico(pedido, EtapaPedido.EMBALADO, data.plusDays(1), "Pedido embalado e aguardando envio.", vendedor);
+        if (statusFinal.ordinal() >= StatusEntrega.EM_TRANSITO.ordinal()) {
+            entrega.setDataEnvio(data.plusDays(2));
+            historico(pedido, EtapaPedido.EM_TRANSITO, data.plusDays(2), "Pedido enviado pela " + transportadora
+                    + ". Código de rastreamento: " + entrega.getCodigoRastreamento() + ".", vendedor);
+        }
+        if (statusFinal.ordinal() >= StatusEntrega.SAIU_PARA_ENTREGA.ordinal()) {
+            historico(pedido, EtapaPedido.SAIU_PARA_ENTREGA, data.plusDays(5), "Pedido saiu para entrega.", vendedor);
+        }
+        if (statusFinal == StatusEntrega.ENTREGUE) {
+            entrega.setDataEntrega(data.plusDays(6));
+            historico(pedido, EtapaPedido.ENTREGUE, data.plusDays(6), "Pedido entregue.", vendedor);
+        }
+        pedido.setEntrega(entregaRepository.save(entrega));
+
+        if (cenario == 8 || cenario == 9) {
+            Devolucao devolucao = new Devolucao();
+            devolucao.setPedido(pedido);
+            devolucao.setMotivo(motivo);
+            devolucao.setStatus(cenario == 9 ? StatusDevolucao.APROVADA : StatusDevolucao.PENDENTE);
+            devolucao.setDataDevolucao(data.plusDays(9));
+            devolucaoRepository.save(devolucao);
+            historico(pedido, EtapaPedido.DEVOLUCAO_SOLICITADA, data.plusDays(9), "Devolução solicitada: " + motivo, cliente);
+        }
+        if (cenario == 9) {
+            pedido.getItens().forEach(item ->
+                    item.getProduto().setEstoque(item.getProduto().getEstoque() + item.getQuantidade()));
+            pedido.setStatus(StatusPedido.DEVOLVIDO);
+            pagamento.setStatus(StatusPagamento.ESTORNADO);
+            pagamentoRepository.save(pagamento);
+            historico(pedido, EtapaPedido.DEVOLVIDO, data.plusDays(10), "Devolução aprovada e pagamento estornado.", vendedor);
+        }
+    }
+
+    private void baixarEstoque(Pedido pedido) {
+        pedido.getItens().forEach(item ->
+                item.getProduto().setEstoque(Math.max(0, item.getProduto().getEstoque() - item.getQuantidade())));
     }
 
     private void adicionarItem(Pedido pedido, Produto produto, int quantidade) {
@@ -399,21 +502,23 @@ public class SeedService {
         pagamento.setStatus(status);
         pagamento.setValorPago(pedido.getValorTotal());
         pagamento.setDataPagamento(dataPedido.plusHours(1));
-        return pagamentoRepository.save(pagamento);
+        pagamento = pagamentoRepository.save(pagamento);
+        pedido.setPagamento(pagamento);
+        return pagamento;
     }
 
-    private void criarEntrega(Pedido pedido, String transportadora, int i, StatusEntrega status, LocalDateTime dataPedido) {
-        Entrega entrega = new Entrega();
-        entrega.setPedido(pedido);
-        entrega.setTransportadora(transportadora);
-        entrega.setCodigoRastreamento("BR" + String.format("%09d", i) + "BR");
-        entrega.setStatusEntrega(status);
-        entrega.setDataEnvio(dataPedido.plusDays(1));
-        entrega.setDataEntregaPrevista(dataPedido.plusDays(8));
-        if (status == StatusEntrega.ENTREGUE) {
-            entrega.setDataEntrega(dataPedido.plusDays(6));
-        }
-        entregaRepository.save(entrega);
+    private void historico(Pedido pedido, EtapaPedido etapa, LocalDateTime data, String descricao, Usuario autor) {
+        PedidoHistorico registro = new PedidoHistorico();
+        registro.setPedido(pedido);
+        registro.setEtapa(etapa);
+        registro.setData(data);
+        registro.setDescricao(descricao);
+        PedidoHistoricoService.preencherAutor(registro, autor);
+        pedido.getHistorico().add(registro);
+    }
+
+    private String imagem(String tema, int seed) {
+        return "https://loremflickr.com/640/640/" + tema + "?lock=" + seed;
     }
 
     private String semAcentos(String texto) {

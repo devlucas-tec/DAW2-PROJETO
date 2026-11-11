@@ -6,6 +6,7 @@ import br.edu.ifpb.es.daw.rest.dto.response.DevolucaoResponseDTO;
 import br.edu.ifpb.es.daw.service.DevolucaoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +23,12 @@ public class DevolucaoRestController implements DevolucaoRestControllerApi {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'CLIENTE')")
     public ResponseEntity<DevolucaoResponseDTO> adicionar(@RequestBody @Valid DevolucaoRequestDTO dto) {
         return new ResponseEntity<>(mapper.from(service.criar(dto.getIdPedido(), dto.getMotivo())), HttpStatus.CREATED);
+    }
+
+    @Override @GetMapping("/minhas")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<Page<DevolucaoResponseDTO>> minhas(@RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarMinhas(page).map(mapper::from));
     }
 
     @Override @GetMapping("/{id}")
