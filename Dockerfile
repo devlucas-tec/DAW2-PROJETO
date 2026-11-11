@@ -9,6 +9,9 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
 # Agora copia o código e gera o jar
 COPY src src
+# O application.properties real fica fora do Git (.gitignore). Usa o exemplo versionado,
+# sem segredos, para a imagem sair igual em qualquer máquina; os valores vêm do compose.
+COPY application.properties.example src/main/resources/application.properties
 RUN ./mvnw package -DskipTests -B
 
 # Estágio 2: execução
