@@ -42,11 +42,27 @@ Controllers finos, DTOs de requisição e resposta, paginação nas listagens, d
 * **Filtro JWT:** `JwtAuthenticationFilter` autentica cada requisição de forma stateless.
 * **Perfis:** `ADMIN`, `VENDEDOR` e `CLIENTE`, verificados com `@PreAuthorize`.
 * **Propriedade:** além do perfil, a API verifica se o recurso pertence ao usuário logado (um cliente só vê e altera os próprios pedidos, endereços, carrinho e avaliações; um vendedor só altera os próprios produtos e só acessa pedidos que contêm produtos seus).
-* **Rotas públicas:** `/auth/login`, `POST /clientes`, `POST /vendedores` e Swagger.
+* **Usuário logado:** `GET /auth/me` devolve `id`, `nome`, `email` e `role`; o login também já traz `id` e `nome`.
+* **Rotas públicas (sem token):** `/auth/login`, `POST /clientes`, `POST /vendedores`, Swagger e a vitrine:
+  `GET /produtos`, `/produtos/{id}`, `/produtos/buscar`, `/categorias`, `/categorias/{id}`,
+  `/vendedores/{id}` (perfil da loja, sem e-mail e CNPJ/CPF) e `/avaliacoes?idProduto=`.
+  `GET /vendedores` (dados completos) continua restrito ao ADMIN.
+* **Bloqueio:** `PATCH /usuarios/{id}/ativo` (ADMIN). Usuário bloqueado não loga e os produtos de um vendedor bloqueado somem da vitrine.
 
 ### 6. Seed de Dados
 * **Admin padrão** criado automaticamente no primeiro boot.
-* `POST /seed/popular`, `DELETE /seed/limpar` e `POST /seed/resetar` (restritos a ADMIN) geram dados de teste coerentes com as regras de negócio.
+* `POST /seed/popular`, `DELETE /seed/limpar` e `POST /seed/resetar` (restritos a ADMIN) geram dados de teste coerentes com as regras de negócio: produtos com imagens, dois anúncios pausados, alguns com estoque baixo, e 50 compras (as pares com dois vendedores, gerando dois pedidos) em todas as etapas do ciclo, com histórico.
+
+### 7. Catálogo
+* **Imagens e status:** `imagemUrl` (obrigatória, URL http/https), galeria opcional `imagens` e `ativo` (pausar o anúncio sem excluir). `PATCH /produtos/{id}` é parcial: só os campos enviados mudam.
+* **Busca:** `GET /produtos/buscar?nome=&idCategoria=&idVendedor=&precoMin=&precoMax=&somenteComEstoque=&sort=&page=&size=`. A ordenação é feita no banco, sobre o conjunto todo: `preco,asc`, `preco,desc`, `nome,asc`, `nome,desc`, `dataCadastro,desc`, `dataCadastro,asc`, `avaliacao,desc`. `size` vai de 1 a 50.
+* **Avaliações:** cada produto traz `mediaAvaliacoes` (uma casa decimal, `null` sem avaliações) e `totalAvaliacoes`. `GET /avaliacoes?idProduto=` (público, mais recentes primeiro) e `GET /avaliacoes/minhas` (CLIENTE).
+* **Meus produtos:** `GET /produtos/meus?nome=&ativo=` (VENDEDOR) inclui anúncios pausados e sem estoque. O vendedor só altera os próprios produtos; o `idVendedor` enviado por um VENDEDOR é ignorado.
+
+### 8. Painéis
+* **Cliente:** `GET /pedidos?status=`, `GET /devolucoes/minhas`, `GET /compras`, `PATCH /clientes/me/senha` (exige a senha atual) e `GET /enderecos` (só os do cliente do token).
+* **Vendedor:** `GET /dashboard/vendedor?periodo=7d|30d|12m` com faturamento, nº de pedidos, ticket médio, pedidos por status e por etapa, série temporal, top 5 produtos, estoque baixo (≤ 5) e média das avaliações. Só considera itens dos produtos do vendedor. `GET /vendedores/me` traz os dados completos da loja.
+* **Admin:** `GET /dashboard/admin?periodo=` (GMV, pedidos por status, novos usuários, top vendedores e categorias, série temporal) e `GET /usuarios?nome=&role=&ativo=`.
 
 ---
 
@@ -54,18 +70,17 @@ Controllers finos, DTOs de requisição e resposta, paginação nas listagens, d
 
 | Etapa | Endpoint | Quem | Regra |
 | :--- | :--- | :--- | :--- |
-| 1. Criar pedido | `POST /pedidos` | Cliente | Cupom precisa estar ATIVO e dentro da validade. Pedido nasce `CRIADO` com total zero. |
-| 2. Adicionar itens | `POST /itens-pedido` | Cliente | Só em pedido `CRIADO`. Preço vem do produto. Quantidade ≤ estoque. Total é recalculado (itens − desconto do cupom). |
-| 3. Confirmar | `PATCH /pedidos/{id}/fechar` | Cliente | Precisa ter itens. Baixa o estoque. Status `CONFIRMADO`. |
-| 4. Pagar | `POST /pagamentos` | Cliente | Só pedido `CONFIRMADO`. Valor pago = total do pedido. Status `PENDENTE`. |
-| 5. Aprovar pagamento | `PATCH /pagamentos/{id}/confirmar` | Vendedor/Admin | Só pagamento `PENDENTE` → `APROVADO`. |
-| 6. Enviar | `POST /entregas` | Vendedor/Admin | Só com pagamento `APROVADO`. Uma entrega por pedido. Começa `EMBALADO`. |
-| 7. Atualizar entrega | `PATCH /entregas/{id}/status` | Vendedor/Admin | Status só avança: `EMBALADO` → `EM_TRANSITO` → `SAIU_PARA_ENTREGA` → `ENTREGUE`. |
-| 8. Avaliar | `POST /avaliacoes` | Cliente | Só produtos de pedidos `CONFIRMADOS`, uma avaliação por produto. |
-| 9. Devolver | `POST /devolucoes` | Cliente | Só pedido `ENTREGUE`, uma devolução ativa por pedido. |
-| 10. Aprovar devolução | `PATCH /devolucoes/{id}/aprovar` | Vendedor/Admin | Pedido vira `DEVOLVIDO`, pagamento `ESTORNADO` e o estoque é devolvido. |
+| 1. Montar o carrinho | `GET /carrinhos/meu`, `POST /carrinhos/meu/itens`, `PUT/DELETE /carrinhos/meu/itens/{idProduto}`, `DELETE /carrinhos/meu` | Cliente | O carrinho é criado sozinho. Adicionar de novo o mesmo produto soma a quantidade (o `PUT` define). Produto precisa estar ativo e a quantidade ≤ estoque (senão `422`). |
+| 2. Finalizar | `POST /checkout` `{idEndereco, codigoCupom?, metodoPagamento}` | Cliente | Uma transação: valida carrinho, estoque e cupom, cria uma **compra** com **um pedido por vendedor**, copia o endereço para o pedido, baixa o estoque, cria o pagamento e esvazia o carrinho. O desconto do cupom é rateado entre os pedidos. Qualquer falha desfaz tudo. |
+| 3. Pagamento | (automático no checkout) | — | `CARTAO` (simulado) já fica `APROVADO`; `PIX` e `BOLETO` ficam `PENDENTE`. |
+| 4. Avançar o pedido | `PATCH /pedidos/{id}/status` `{status, transportadora?, codigoRastreamento?}` | Vendedor dono dos itens / Admin | Sempre a próxima etapa: `PAGAMENTO_APROVADO` → `EMBALADO` → `EM_TRANSITO` (exige transportadora e rastreio) → `SAIU_PARA_ENTREGA` → `ENTREGUE`. Pular etapa dá `422`. |
+| 5. Acompanhar | `GET /pedidos/{id}` (`etapaAtual`, `proximaEtapa`) e `GET /pedidos/{id}/historico` | Cliente / Vendedor | Cada etapa fica registrada com data e autor (timeline). |
+| 6. Avaliar | `POST /avaliacoes` | Cliente | Só produtos de pedidos **ENTREGUES**, uma avaliação por produto. |
+| 7. Devolver | `POST /devolucoes` → `PATCH /devolucoes/{id}/aprovar` | Cliente → Vendedor/Admin | Só pedido `ENTREGUE`. Aprovada, o pedido vira `DEVOLVIDO`, o pagamento `ESTORNADO` e o estoque volta. |
 
-**Cancelamento:** `PATCH /pedidos/{id}/cancelar` só é permitido para pedidos `CRIADOS` ou `CONFIRMADOS` que ainda não foram enviados. O estoque é devolvido e o pagamento vira `ESTORNADO` (se aprovado) ou `RECUSADO` (se pendente).
+**Cancelamento:** `PATCH /pedidos/{id}/cancelar` só é permitido para pedidos `CRIADOS` ou `CONFIRMADOS` que ainda não foram embalados. O estoque é devolvido e o pagamento vira `ESTORNADO` (se aprovado) ou `RECUSADO` (se pendente).
+
+Os endpoints antigos (`POST /pedidos` + `/itens-pedido` + `/pedidos/{id}/fechar`, `POST /pagamentos`, `/pagamentos/{id}/confirmar`, `/entregas`) continuam funcionando e seguem as mesmas regras de transição e histórico.
 
 ---
 
@@ -89,7 +104,7 @@ Controllers finos, DTOs de requisição e resposta, paginação nas listagens, d
 | E-mail | `admin@marketplace.com` |
 | Senha | `admin123` |
 
-Após `POST /seed/popular`, também existem `cliente1@email.com` … `cliente50@email.com` e `vendedor1@eletronicos.com` … (senha `senha123`).
+Após `POST /seed/popular`, também existem `cliente1@email.com` … `cliente50@email.com` e `vendedor1@eletronicos.com` … (senha `senha123`). Os produtos ficam com os vendedores 1 a 10 (5 produtos cada).
 
 ---
 
@@ -153,6 +168,16 @@ docker compose up -d
 | `Connection refused` | Serviço do PostgreSQL parado ou porta errada (`5432` local × `5433` Docker). |
 | `Unable to determine Dialect without JDBC metadata` | Consequência de uma das falhas de conexão acima — verifique a primeira causa (`Caused by`) no log. |
 | `Port 8080 was already in use` | Já existe outra instância da API (ou outro programa) usando a porta 8080. |
+
+---
+
+## 🧪 Testes
+
+Os testes de integração (MockMvc + H2 em memória, sem precisar do PostgreSQL) cobrem endpoints públicos x protegidos, propriedade de produto (vendedor A × B), checkout dividido por vendedor com rollback de estoque, transições de status inválidas, avaliação só após a entrega, painéis e o seed.
+
+```bash
+./mvnw test
+```
 
 ---
 
