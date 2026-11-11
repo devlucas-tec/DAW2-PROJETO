@@ -5,6 +5,9 @@ import br.edu.ifpb.es.daw.rest.dto.request.ClienteRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
 import br.edu.ifpb.es.daw.service.ClienteService;
+import br.edu.ifpb.es.daw.rest.dto.request.AlterarSenhaDTO;
+import br.edu.ifpb.es.daw.service.UsuarioAutenticadoService;
+import br.edu.ifpb.es.daw.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +22,15 @@ public class ClienteRestController implements ClienteRestControllerApi {
 
     @Autowired private ClienteMapper mapper;
     @Autowired private ClienteService service;
+    @Autowired private UsuarioService usuarioService;
+    @Autowired private UsuarioAutenticadoService usuarioAutenticado;
+
+    @Override @PatchMapping("/me/senha")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    public ResponseEntity<Void> alterarSenha(@RequestBody @Valid AlterarSenhaDTO dto) {
+        usuarioService.alterarSenha(usuarioAutenticado.getUsuario(), dto.getSenhaAtual(), dto.getNovaSenha());
+        return ResponseEntity.noContent().build();
+    }
 
     @Override @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")

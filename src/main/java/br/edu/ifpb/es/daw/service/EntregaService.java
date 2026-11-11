@@ -1,20 +1,16 @@
 package br.edu.ifpb.es.daw.service;
 
-import br.edu.ifpb.es.daw.exception.ConflitoException;
 import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
-import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import br.edu.ifpb.es.daw.model.Entrega;
 import br.edu.ifpb.es.daw.model.Pedido;
+import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
 import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
-import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
-import br.edu.ifpb.es.daw.model.enums.StatusPedido;
 import br.edu.ifpb.es.daw.repository.EntregaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
+/** Mantém os endpoints de /entregas, delegando as regras de transição ao {@link CicloPedidoService}. */
 @Service
 public class EntregaService {
 
@@ -22,30 +18,15 @@ public class EntregaService {
     private EntregaRepository repository;
 
     @Autowired
-    private PedidoService pedidoService;
+    private CicloPedidoService cicloPedidoService;
 
     @Autowired
     private UsuarioAutenticadoService usuarioAutenticado;
 
     @Transactional
     public Entrega criar(Long idPedido, String transportadora, String codigoRastreamento) {
-        Pedido pedido = pedidoService.buscarComAcesso(idPedido);
-        pedidoService.validarStatus(pedido, StatusPedido.CONFIRMADO, "enviado");
-        if (pedido.getPagamento() == null || pedido.getPagamento().getStatus() != StatusPagamento.APROVADO) {
-            throw new EstadoInvalidoException("O pedido só pode ser enviado após o pagamento ser APROVADO.");
-        }
-        if (repository.findByPedido(pedido).isPresent()) {
-            throw new ConflitoException("O pedido já possui uma entrega registrada.");
-        }
-        if (codigoRastreamento != null && repository.existsByCodigoRastreamento(codigoRastreamento)) {
-            throw new ConflitoException("Já existe uma entrega com o código de rastreamento '" + codigoRastreamento + "'.");
-        }
-        Entrega entrega = new Entrega();
-        entrega.setPedido(pedido);
-        entrega.setTransportadora(transportadora);
-        entrega.setCodigoRastreamento(codigoRastreamento);
-        entrega.setStatusEntrega(StatusEntrega.EMBALADO);
-        return repository.save(entrega);
+        Pedido pedido = cicloPedidoService.avancar(idPedido, EtapaPedido.EMBALADO, transportadora, codigoRastreamento);
+        return pedido.getEntrega();
     }
 
     public Entrega buscarPorId(Long id) {
@@ -56,20 +37,10 @@ public class EntregaService {
     }
 
     @Transactional
-    public Entrega atualizarStatus(Long id, StatusEntrega novoStatus) {
+    public Entrega atualizarStatus(Long id, StatusEntrega novoStatus, String transportadora, String codigoRastreamento) {
         Entrega entrega = buscarPorId(id);
-        StatusEntrega atual = entrega.getStatusEntrega();
-        if (novoStatus.ordinal() <= atual.ordinal()) {
-            throw new EstadoInvalidoException("O status da entrega só pode avançar. Status atual: " + atual
-                    + ", status solicitado: " + novoStatus);
-        }
-        if (entrega.getPedido().getStatus() != StatusPedido.CONFIRMADO) {
-            throw new EstadoInvalidoException("O pedido desta entrega não está CONFIRMADO.");
-        }
-        entrega.setStatusEntrega(novoStatus);
-        if (novoStatus == StatusEntrega.ENTREGUE) {
-            entrega.setDataEntrega(LocalDateTime.now());
-        }
-        return repository.save(entrega);
+        Pedido pedido = cicloPedidoService.avancar(entrega.getPedido().getId(), EtapaPedido.de(novoStatus),
+                transportadora, codigoRastreamento);
+        return pedido.getEntrega();
     }
 }

@@ -4,12 +4,16 @@ import br.edu.ifpb.es.daw.rest.dto.request.DevolucaoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.DevolucaoResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Devolução", description = "API Devolução")
 public interface DevolucaoRestControllerApi {
     @Operation(summary = "Registrar devolução")
     ResponseEntity<DevolucaoResponseDTO> adicionar(DevolucaoRequestDTO dto);
+
+    @Operation(summary = "Listar as devoluções do cliente logado")
+    ResponseEntity<Page<DevolucaoResponseDTO>> minhas(int page);
 
     @Operation(summary = "Buscar devolução por ID")
     ResponseEntity<DevolucaoResponseDTO> recuperarPor(Long id);

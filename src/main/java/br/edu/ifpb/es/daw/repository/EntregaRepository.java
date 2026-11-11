@@ -13,4 +13,6 @@ public interface EntregaRepository extends JpaRepository<Entrega, Long> {
     Optional<Entrega> findByPedido(Pedido pedido);
 
     boolean existsByCodigoRastreamento(String codigoRastreamento);
+
+    Optional<Entrega> findByCodigoRastreamento(String codigoRastreamento);
 }

@@ -11,5 +11,8 @@ public interface ItemPedidoMapper {
     @Mapping(target = "idPedido", source = "pedido.id")
     @Mapping(target = "idProduto", source = "produto.id")
     @Mapping(target = "nomeProduto", source = "produto.nome")
+    @Mapping(target = "imagemUrl", source = "produto.imagemUrl")
+    @Mapping(target = "idVendedor", source = "produto.vendedor.id")
+    @Mapping(target = "nomeVendedor", source = "produto.vendedor.razaoSocial")
     ItemPedidoResponseDTO from(ItemPedido obj);
 }

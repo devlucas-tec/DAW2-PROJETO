@@ -5,6 +5,7 @@ import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import br.edu.ifpb.es.daw.model.Pagamento;
 import br.edu.ifpb.es.daw.model.Pedido;
+import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
 import br.edu.ifpb.es.daw.model.enums.MetodoPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
@@ -25,12 +26,19 @@ public class PagamentoService {
     private PedidoService pedidoService;
 
     @Autowired
+    private CicloPedidoService cicloPedidoService;
+
+    @Autowired
+    private PedidoHistoricoService historicoService;
+
+    @Autowired
     private UsuarioAutenticadoService usuarioAutenticado;
 
     @Transactional
     public Pagamento criar(Long idPedido, MetodoPagamento metodo) {
         Pedido pedido = pedidoService.buscarComoDono(idPedido);
         pedidoService.validarStatus(pedido, StatusPedido.CONFIRMADO, "pago");
+
         Pagamento pagamento = repository.findByPedido(pedido).orElse(null);
         if (pagamento != null && pagamento.getStatus() != StatusPagamento.RECUSADO) {
             throw new ConflitoException("O pedido já possui um pagamento " + pagamento.getStatus() + ".");
@@ -53,12 +61,13 @@ public class PagamentoService {
         return pagamento;
     }
 
+    /** Confirmação feita pelo vendedor dono dos itens (ou ADMIN); entra no histórico do pedido. */
     @Transactional
     public Pagamento confirmar(Long id) {
         Pagamento pagamento = buscarPorId(id);
         validarPendente(pagamento, "confirmado");
-        pagamento.setStatus(StatusPagamento.APROVADO);
-        return repository.save(pagamento);
+        return cicloPedidoService.avancar(pagamento.getPedido().getId(), EtapaPedido.PAGAMENTO_APROVADO, null, null)
+                .getPagamento();
     }
 
     @Transactional
@@ -67,6 +76,7 @@ public class PagamentoService {
         usuarioAutenticado.validarDonoPedido(pagamento.getPedido());
         validarPendente(pagamento, "cancelado");
         pagamento.setStatus(StatusPagamento.RECUSADO);
+        historicoService.registrar(pagamento.getPedido(), EtapaPedido.PAGAMENTO_RECUSADO, "Pagamento cancelado pelo cliente.");
         return repository.save(pagamento);
     }
 

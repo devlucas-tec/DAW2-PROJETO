@@ -20,7 +20,6 @@ public class CategoriaRestController implements CategoriaRestControllerApi {
     @Autowired private CategoriaService service;
 
     @Override @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<Page<CategoriaResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
     }
@@ -32,7 +31,6 @@ public class CategoriaRestController implements CategoriaRestControllerApi {
     }
 
     @Override @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR', 'CLIENTE')")
     public ResponseEntity<CategoriaResponseDTO> recuperarPor(@PathVariable Long id) {
         return ResponseEntity.ok(mapper.from(service.buscarPorId(id)));
     }

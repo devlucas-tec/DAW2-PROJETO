@@ -1,5 +1,6 @@
 package br.edu.ifpb.es.daw.rest;
 
+import br.edu.ifpb.es.daw.rest.dto.request.AlterarSenhaDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.ClienteUpdateDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.ClienteResponseDTO;
@@ -34,4 +35,7 @@ public interface ClienteRestControllerApi {
 
     @Operation(summary = "Remover cliente")
     ResponseEntity<Void> remover(@PathVariable Long id);
+
+    @Operation(summary = "Alterar a senha do cliente logado (exige a senha atual)")
+    ResponseEntity<Void> alterarSenha(AlterarSenhaDTO dto);
 }

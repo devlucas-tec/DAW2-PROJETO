@@ -7,8 +7,10 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.hibernate.validator.constraints.URL;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProdutoRequestDTO {
@@ -32,10 +34,23 @@ public class ProdutoRequestDTO {
     @Schema(example = "50")
     private Integer estoque;
 
+    @NotBlank
+    @Size(max = 500)
+    @URL(regexp = "^https?://.+", message = "deve ser uma URL http(s) válida")
+    @Schema(example = "https://loremflickr.com/640/640/smartphone?lock=1")
+    private String imagemUrl;
+
+    @Size(max = 10)
+    @Schema(description = "Galeria opcional de imagens adicionais.")
+    private List<@NotBlank @Size(max = 500) @URL(regexp = "^https?://.+", message = "deve ser uma URL http(s) válida") String> imagens;
+
+    @Schema(description = "Padrão true. Use false para cadastrar o anúncio pausado.", example = "true")
+    private Boolean ativo;
+
     @NotNull
     @Schema(example = "1")
     private Long idCategoria;
 
-    @Schema(description = "Obrigatório apenas para ADMIN. Para VENDEDOR é usado o próprio usuário logado.", example = "1")
+    @Schema(description = "Obrigatório apenas para ADMIN. Para VENDEDOR é sempre usado o usuário logado (o valor enviado é ignorado).", example = "1")
     private Long idVendedor;
 }

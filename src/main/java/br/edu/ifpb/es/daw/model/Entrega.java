@@ -46,7 +46,9 @@ public class Entrega {
 
     @PrePersist
     protected void onCreate() {
-        if (this.dataEnvio == null) this.dataEnvio = LocalDateTime.now();
-        if (this.dataEntregaPrevista == null) this.dataEntregaPrevista = this.dataEnvio.plusDays(7);
+        // dataEnvio é preenchida quando a entrega passa para EM_TRANSITO.
+        if (this.dataEntregaPrevista == null) {
+            this.dataEntregaPrevista = (this.dataEnvio != null ? this.dataEnvio : LocalDateTime.now()).plusDays(7);
+        }
     }
 }

@@ -9,6 +9,7 @@ import br.edu.ifpb.es.daw.model.Pagamento;
 import br.edu.ifpb.es.daw.model.Pedido;
 import br.edu.ifpb.es.daw.model.Produto;
 import br.edu.ifpb.es.daw.model.Usuario;
+import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
 import br.edu.ifpb.es.daw.repository.PedidoRepository;
@@ -31,6 +32,9 @@ public class PedidoService {
     @Autowired
     private UsuarioAutenticadoService usuarioAutenticado;
 
+    @Autowired
+    private PedidoHistoricoService historicoService;
+
     @Transactional
     public Pedido criar(Cliente cliente, Cupom cupom) {
         validarCupom(cupom);
@@ -39,16 +43,19 @@ public class PedidoService {
         pedido.setCupom(cupom);
         pedido.setStatus(StatusPedido.CRIADO);
         pedido.recalcularValorTotal();
+        historicoService.registrar(pedido, EtapaPedido.PEDIDO_CRIADO, "Pedido criado.");
         return repository.save(pedido);
     }
 
-    public Page<Pedido> recuperarTodos(int page) {
+    /** ADMIN vê todos; CLIENTE, os seus; VENDEDOR, os que têm itens dele. Filtro opcional por status. */
+    public Page<Pedido> recuperarTodos(StatusPedido status, int page) {
         Usuario usuario = usuarioAutenticado.getUsuario();
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "dataPedido"));
+        Pageable pageable = PageRequest.of(Math.max(page, 0), PAGE_SIZE,
+                Sort.by(Sort.Direction.DESC, "dataPedido").and(Sort.by(Sort.Direction.DESC, "id")));
         return switch (usuario.getRole()) {
-            case ADMIN -> repository.findAll(pageable);
-            case CLIENTE -> repository.buscarPorCliente(usuario.getId(), pageable);
-            case VENDEDOR -> repository.buscarPorVendedor(usuario.getId(), pageable);
+            case ADMIN -> repository.buscarTodos(status, pageable);
+            case CLIENTE -> repository.buscarPorCliente(usuario.getId(), status, pageable);
+            case VENDEDOR -> repository.buscarPorVendedor(usuario.getId(), status, pageable);
         };
     }
 
@@ -79,6 +86,9 @@ public class PedidoService {
         validarCupom(pedido.getCupom());
         for (ItemPedido item : pedido.getItens()) {
             Produto produto = item.getProduto();
+            if (!produto.isDisponivelParaVenda()) {
+                throw new EstadoInvalidoException("O produto '" + produto.getNome() + "' não está mais disponível para venda.");
+            }
             if (item.getQuantidade() > produto.getEstoque()) {
                 throw new EstadoInvalidoException("Estoque insuficiente para o produto '" + produto.getNome()
                         + "'. Disponível: " + produto.getEstoque() + ", solicitado: " + item.getQuantidade());
@@ -88,6 +98,7 @@ public class PedidoService {
                 item.getProduto().setEstoque(item.getProduto().getEstoque() - item.getQuantidade()));
         pedido.recalcularValorTotal();
         pedido.setStatus(StatusPedido.CONFIRMADO);
+        historicoService.registrar(pedido, EtapaPedido.PEDIDO_CONFIRMADO, "Pedido confirmado. Aguardando pagamento.");
         return repository.save(pedido);
     }
 
@@ -114,6 +125,7 @@ public class PedidoService {
             }
         }
         pedido.setStatus(StatusPedido.CANCELADO);
+        historicoService.registrar(pedido, EtapaPedido.CANCELADO, "Pedido cancelado pelo cliente.");
         return repository.save(pedido);
     }
 
@@ -143,7 +155,7 @@ public class PedidoService {
         }
     }
 
-    private void validarCupom(Cupom cupom) {
+    public void validarCupom(Cupom cupom) {
         if (cupom != null && !cupom.isValido()) {
             throw new EstadoInvalidoException("O cupom '" + cupom.getCodigo() + "' está inativo ou expirado.");
         }
