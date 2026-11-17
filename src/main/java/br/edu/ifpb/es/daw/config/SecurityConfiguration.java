@@ -44,7 +44,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/auth/login", "/error", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/clientes", "/vendedores").permitAll()
                         // Rotas "do usuário logado" que colidem com os padrões públicos abaixo.
-                        .requestMatchers(HttpMethod.GET, "/produtos/meus", "/vendedores/me", "/avaliacoes/minhas").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/produtos/meus", "/produtos/todos", "/vendedores/me", "/avaliacoes/minhas").authenticated()
                         // Catálogo público (vitrine).
                         .requestMatchers(HttpMethod.GET,
                                 "/produtos", "/produtos/buscar", "/produtos/{id}",

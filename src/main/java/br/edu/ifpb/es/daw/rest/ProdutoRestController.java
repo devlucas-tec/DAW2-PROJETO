@@ -65,6 +65,17 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
         return ResponseEntity.ok(service.buscarMeus(nome, ativo, page, size).map(mapper::from));
     }
 
+    @Override @GetMapping("/todos")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Page<ProdutoResponseDTO>> todos(
+            @RequestParam(required = false) Long idVendedor,
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Boolean ativo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Integer size) {
+        return ResponseEntity.ok(service.buscarTodos(idVendedor, nome, ativo, page, size).map(mapper::from));
+    }
+
     @Override @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
     public ResponseEntity<ProdutoResponseDTO> adicionar(@RequestBody @Valid ProdutoRequestDTO dto) {

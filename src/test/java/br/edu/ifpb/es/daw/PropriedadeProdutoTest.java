@@ -85,6 +85,30 @@ class PropriedadeProdutoTest extends IntegracaoTestBase {
     }
 
     @Test
+    @DisplayName("GET /produtos/todos (ADMIN) lista produtos de todas as lojas, inclusive pausados, com filtros")
+    void todosOsProdutosParaAdmin() throws Exception {
+        Vendedor vendedorA = criarVendedor();
+        Vendedor vendedorB = criarVendedor();
+        Produto ativoA = criarProduto(vendedorA, "10.00", 5);
+        Produto pausadoA = criarProduto(vendedorA, "10.00", 5, false);
+        Produto semEstoqueB = criarProduto(vendedorB, "10.00", 0);
+        String tokenAdmin = login(criarAdmin());
+
+        executar(get("/produtos/todos").param("idVendedor", vendedorA.getId().toString()), tokenAdmin)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(
+                        ativoA.getId().intValue(), pausadoA.getId().intValue())));
+        executar(get("/produtos/todos").param("idVendedor", vendedorA.getId().toString()).param("ativo", "false"), tokenAdmin)
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(pausadoA.getId()));
+        executar(get("/produtos/todos").param("idVendedor", vendedorB.getId().toString()), tokenAdmin)
+                .andExpect(jsonPath("$.content[0].id").value(semEstoqueB.getId()));
+
+        executar(get("/produtos/todos"), null).andExpect(status().isUnauthorized());
+        executar(get("/produtos/todos"), login(vendedorA)).andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("Pausar o anúncio pelo PATCH tira o produto da vitrine")
     void pausarAnuncio() throws Exception {
         Vendedor vendedor = criarVendedor();

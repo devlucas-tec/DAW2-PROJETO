@@ -69,6 +69,13 @@ public class ProdutoService {
                         Sort.by(Sort.Direction.DESC, "dataCadastro").and(Sort.by("id"))));
     }
 
+    /** Painel do admin: todos os produtos, com filtro por loja, nome e status (ativo/pausado). */
+    public Page<Produto> buscarTodos(Long idVendedor, String nome, Boolean ativo, int page, Integer size) {
+        return repository.buscarTodos(idVendedor, vazioParaNull(nome), ativo,
+                PageRequest.of(Math.max(page, 0), tamanhoPagina(size),
+                        Sort.by(Sort.Direction.DESC, "dataCadastro").and(Sort.by("id"))));
+    }
+
     public Produto buscarPorId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Produto", id));
