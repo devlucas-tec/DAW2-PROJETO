@@ -21,4 +21,13 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
             AND   (:email IS NULL OR LOWER(c.email) LIKE LOWER(CONCAT('%', CAST(:email AS string), '%')))
             """)
     Page<Cliente> filtrar(String nome, String email, Pageable pageable);
+
+    /**
+     * Trava a linha do usuário (SELECT ... FOR UPDATE) até o fim da transação. Serve para serializar as
+     * operações no carrinho de um mesmo cliente: sem isso, duas requisições simultâneas adicionando o mesmo
+     * produto leem o carrinho sem ele e as duas tentam inserir a mesma linha em item_carrinho.
+     * É uma consulta nativa porque o @Lock do JPA não gera o FOR UPDATE na herança JOINED (cliente + usuario).
+     */
+    @Query(value = "SELECT id FROM usuario WHERE id = :id FOR UPDATE", nativeQuery = true)
+    Long travarParaAtualizacao(Long id);
 }

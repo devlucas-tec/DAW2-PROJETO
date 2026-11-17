@@ -195,6 +195,7 @@ public class CheckoutService {
 
     private Cliente clienteLogado() {
         Long id = usuarioAutenticado.getUsuario().getId();
+        clienteRepository.travarParaAtualizacao(id);
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new AccessDeniedException("Apenas clientes podem finalizar compras."));
     }
