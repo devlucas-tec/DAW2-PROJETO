@@ -47,9 +47,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/produtos/meus", "/produtos/todos", "/vendedores/me", "/avaliacoes/minhas").authenticated()
                         // Catálogo público (vitrine).
                         .requestMatchers(HttpMethod.GET,
-                                "/produtos", "/produtos/buscar", "/produtos/{id}",
+                                "/produtos", "/produtos/buscar", "/produtos/mais-vendidos", "/produtos/{id}",
                                 "/categorias", "/categorias/{id}",
-                                "/vendedores/{id}").permitAll()
+                                "/vendedores/destaque", "/vendedores/{id}",
+                                "/avaliacoes/resumo").permitAll()
                         .requestMatchers(avaliacoesDeUmProduto()).permitAll()
                         .requestMatchers("/seed/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()

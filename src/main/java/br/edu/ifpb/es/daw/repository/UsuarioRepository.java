@@ -27,8 +27,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
                                   OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:nome AS string), '%')))
             AND   (:role  IS NULL OR u.role = :role)
             AND   (:ativo IS NULL OR u.ativo = :ativo)
+            AND   u.excluido = false
             """)
     Page<Usuario> filtrar(String nome, Role role, Boolean ativo, Pageable pageable);
 
     List<Usuario> findByDataCadastroGreaterThanEqual(LocalDateTime inicio);
+
+    long countByRoleAndAtivoTrueAndExcluidoFalse(Role role);
 }

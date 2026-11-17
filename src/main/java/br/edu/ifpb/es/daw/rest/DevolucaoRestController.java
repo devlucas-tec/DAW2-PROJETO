@@ -1,5 +1,7 @@
 package br.edu.ifpb.es.daw.rest;
 
+import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
+import io.swagger.v3.oas.annotations.Operation;
 import br.edu.ifpb.es.daw.mapper.DevolucaoMapper;
 import br.edu.ifpb.es.daw.rest.dto.request.DevolucaoRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.response.DevolucaoResponseDTO;
@@ -29,6 +31,15 @@ public class DevolucaoRestController implements DevolucaoRestControllerApi {
     @PreAuthorize("hasAuthority('CLIENTE')")
     public ResponseEntity<Page<DevolucaoResponseDTO>> minhas(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarMinhas(page).map(mapper::from));
+    }
+
+    @GetMapping("/recebidas")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Devoluções a analisar: do vendedor logado (pedidos com itens dele) ou todas, para o ADMIN")
+    public ResponseEntity<Page<DevolucaoResponseDTO>> recebidas(
+            @RequestParam(required = false) StatusDevolucao status,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarRecebidas(status, page).map(mapper::from));
     }
 
     @Override @GetMapping("/{id}")

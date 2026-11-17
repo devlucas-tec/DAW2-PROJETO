@@ -16,5 +16,8 @@ public interface VendedorMapper {
     @Mapping(target = "dataAtualizacao", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "ativo", ignore = true)
+    @Mapping(target = "lojaAberta", ignore = true)
+    @Mapping(target = "excluido", ignore = true)
+    @Mapping(target = "dataExclusao", ignore = true)
     Vendedor from(VendedorRequestDTO dto);
 }

@@ -1,5 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
+import java.util.List;
+import br.edu.ifpb.es.daw.rest.dto.request.LojaStatusDTO;
+import io.swagger.v3.oas.annotations.Operation;
 import br.edu.ifpb.es.daw.mapper.VendedorMapper;
 import br.edu.ifpb.es.daw.rest.dto.request.VendedorRequestDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.VendedorUpdateDTO;
@@ -38,6 +41,19 @@ public class VendedorRestController implements VendedorRestControllerApi {
     @PreAuthorize("hasAuthority('VENDEDOR')")
     public ResponseEntity<VendedorResponseDTO> me() {
         return ResponseEntity.ok(mapper.from(service.buscarPorId(usuarioAutenticado.getUsuario().getId())));
+    }
+
+    @GetMapping("/destaque")
+    @Operation(summary = "Lojas em destaque (público): as mais bem avaliadas entre as que têm produtos à venda")
+    public ResponseEntity<List<VendedorPublicoResponseDTO>> destaque(@RequestParam(required = false) Integer limite) {
+        return ResponseEntity.ok(service.lojasEmDestaque(limite));
+    }
+
+    @PatchMapping("/me/loja")
+    @PreAuthorize("hasAuthority('VENDEDOR')")
+    @Operation(summary = "Fechar (aberta=false) ou reabrir a própria loja. Loja fechada não aparece na vitrine")
+    public ResponseEntity<VendedorResponseDTO> alterarLoja(@RequestBody @Valid LojaStatusDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.alterarLojaAberta(dto.getAberta())));
     }
 
     @Override @GetMapping("/{id}")

@@ -20,8 +20,9 @@ public class CategoriaRestController implements CategoriaRestControllerApi {
     @Autowired private CategoriaService service;
 
     @Override @GetMapping
-    public ResponseEntity<Page<CategoriaResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    public ResponseEntity<Page<CategoriaResponseDTO>> listar(@RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(required = false) Integer size) {
+        return ResponseEntity.ok(service.recuperarTodos(page, size).map(mapper::from));
     }
 
     @Override @PostMapping

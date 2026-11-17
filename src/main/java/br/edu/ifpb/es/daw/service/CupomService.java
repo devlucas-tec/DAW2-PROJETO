@@ -5,6 +5,7 @@ import br.edu.ifpb.es.daw.exception.EntidadeNaoEncontradaException;
 import br.edu.ifpb.es.daw.model.Cupom;
 import br.edu.ifpb.es.daw.model.enums.StatusCupom;
 import br.edu.ifpb.es.daw.repository.CupomRepository;
+import br.edu.ifpb.es.daw.exception.EstadoInvalidoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,9 @@ import java.util.Objects;
 
 @Service
 public class CupomService {
+
+    @Autowired
+    private PedidoService pedidoService;
 
     private static final int PAGE_SIZE = 10;
 
@@ -38,6 +42,20 @@ public class CupomService {
                 status,
                 PageRequest.of(page, PAGE_SIZE)
         );
+    }
+
+    /**
+     * Confere se um cupom pode ser usado agora (existe, está ativo e dentro da validade), para o checkout
+     * mostrar o desconto antes de finalizar. As mensagens são as mesmas da finalização da compra.
+     */
+    public Cupom validarParaUso(String codigo) {
+        if (codigo == null || codigo.isBlank()) {
+            throw new IllegalArgumentException("Informe o código do cupom.");
+        }
+        Cupom cupom = repository.findByCodigoIgnoreCase(codigo.trim())
+                .orElseThrow(() -> new EstadoInvalidoException("O cupom '" + codigo.trim() + "' não existe."));
+        pedidoService.validarCupom(cupom);
+        return cupom;
     }
 
     public Cupom buscarPorId(Long id) {

@@ -1,5 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
+import java.util.List;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Operation;
 import br.edu.ifpb.es.daw.mapper.ProdutoMapper;
 import br.edu.ifpb.es.daw.model.Categoria;
 import br.edu.ifpb.es.daw.model.Usuario;
@@ -47,12 +50,13 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
             @RequestParam(required = false) Long idVendedor,
             @RequestParam(required = false) BigDecimal precoMin,
             @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(required = false) Double avaliacaoMin,
             @RequestParam(required = false) Boolean somenteComEstoque,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) Integer size) {
         return ResponseEntity.ok(service.buscarVitrine(nome, idCategoria, idVendedor, precoMin, precoMax,
-                somenteComEstoque, sort, page, size).map(mapper::from));
+                avaliacaoMin, somenteComEstoque, sort, page, size).map(mapper::from));
     }
 
     @Override @GetMapping("/meus")
@@ -63,6 +67,14 @@ public class ProdutoRestController implements ProdutoRestControllerApi {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) Integer size) {
         return ResponseEntity.ok(service.buscarMeus(nome, ativo, page, size).map(mapper::from));
+    }
+
+    @GetMapping("/mais-vendidos")
+    @Operation(summary = "Mais vendidos (público), opcionalmente de uma categoria. Completa com os mais bem avaliados")
+    public ResponseEntity<List<ProdutoResponseDTO>> maisVendidos(
+            @RequestParam(required = false) Long idCategoria,
+            @Parameter(description = "1 a 20, padrão 10") @RequestParam(required = false) Integer limite) {
+        return ResponseEntity.ok(service.maisVendidos(idCategoria, limite).stream().map(mapper::from).toList());
     }
 
     @Override @GetMapping("/todos")

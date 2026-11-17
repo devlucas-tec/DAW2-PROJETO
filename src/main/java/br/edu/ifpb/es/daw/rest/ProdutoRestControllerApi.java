@@ -24,6 +24,7 @@ public interface ProdutoRestControllerApi {
             Long idVendedor,
             BigDecimal precoMin,
             BigDecimal precoMax,
+            @Parameter(description = "Média mínima das avaliações (0 a 5).") Double avaliacaoMin,
             @Parameter(description = "Padrão true: esconde produtos sem estoque.") Boolean somenteComEstoque,
             @Parameter(description = "preco,asc | preco,desc | nome,asc | nome,desc | dataCadastro,desc | dataCadastro,asc | avaliacao,desc") String sort,
             int page,

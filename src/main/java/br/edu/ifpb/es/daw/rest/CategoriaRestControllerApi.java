@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Categorias", description = "API Categorias")
 public interface CategoriaRestControllerApi {
     @Operation(summary = "Listar todas as categorias")
-    ResponseEntity<Page<CategoriaResponseDTO>> listar(@RequestParam(defaultValue = "0") int page);
+    ResponseEntity<Page<CategoriaResponseDTO>> listar(
+            int page,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Tamanho da página (1 a 100, padrão 10). Ordem alfabética.") Integer size);
 
     @Operation(summary = "Criar categoria")
     ResponseEntity<CategoriaResponseDTO> adicionar(@RequestBody CategoriaRequestDTO dto);

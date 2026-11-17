@@ -43,4 +43,15 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     boolean clienteRecebeuProduto(Long idCliente, Long idProduto);
 
     List<Pedido> findByDataPedidoGreaterThanEqual(LocalDateTime inicio);
+
+    /** Pedidos confirmados com itens do vendedor que ainda não foram entregues. */
+    @Query("""
+            SELECT COUNT(DISTINCT p) > 0 FROM Pedido p JOIN p.itens i LEFT JOIN p.entrega e
+            WHERE i.produto.vendedor.id = :idVendedor
+            AND   p.status = br.edu.ifpb.es.daw.model.enums.StatusPedido.CONFIRMADO
+            AND   (e IS NULL OR e.statusEntrega <> br.edu.ifpb.es.daw.model.enums.StatusEntrega.ENTREGUE)
+            """)
+    boolean vendedorTemPedidosEmAndamento(Long idVendedor);
+
+    boolean existsByClienteId(Long idCliente);
 }

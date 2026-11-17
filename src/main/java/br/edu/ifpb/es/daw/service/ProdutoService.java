@@ -8,6 +8,14 @@ import br.edu.ifpb.es.daw.model.Vendedor;
 import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.ProdutoRepository;
 import br.edu.ifpb.es.daw.rest.dto.request.ProdutoUpdateDTO;
+import br.edu.ifpb.es.daw.exception.ConflitoException;
+import br.edu.ifpb.es.daw.model.enums.StatusPedido;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +38,10 @@ public class ProdutoService {
     public static final String ORDENACOES_ACEITAS =
             "preco,asc | preco,desc | nome,asc | nome,desc | dataCadastro,desc | dataCadastro,asc | avaliacao,desc";
 
+    @Autowired private br.edu.ifpb.es.daw.repository.ItemPedidoRepository itemPedidoRepository;
+    @Autowired private br.edu.ifpb.es.daw.repository.ItemCarrinhoRepository itemCarrinhoRepository;
+    @Autowired private br.edu.ifpb.es.daw.repository.FavoritoRepository favoritoRepository;
+
     @Autowired
     private ProdutoRepository repository;
 
@@ -47,8 +59,18 @@ public class ProdutoService {
     public Page<Produto> buscarVitrine(String nome, Long idCategoria, Long idVendedor,
                                        BigDecimal precoMin, BigDecimal precoMax,
                                        Boolean somenteComEstoque, String sort, int page, Integer size) {
+        return buscarVitrine(nome, idCategoria, idVendedor, precoMin, precoMax, null, somenteComEstoque, sort, page, size);
+    }
+
+    /** Vitrine com filtro de avaliação mínima (média de 0 a 5). */
+    public Page<Produto> buscarVitrine(String nome, Long idCategoria, Long idVendedor,
+                                       BigDecimal precoMin, BigDecimal precoMax, Double avaliacaoMin,
+                                       Boolean somenteComEstoque, String sort, int page, Integer size) {
         if (precoMin != null && precoMax != null && precoMin.compareTo(precoMax) > 0) {
             throw new IllegalArgumentException("O preço mínimo não pode ser maior que o preço máximo.");
+        }
+        if (avaliacaoMin != null && (avaliacaoMin < 0 || avaliacaoMin > 5)) {
+            throw new IllegalArgumentException("A avaliação mínima deve estar entre 0 e 5.");
         }
         return repository.buscarVitrine(
                 vazioParaNull(nome),
@@ -56,6 +78,7 @@ public class ProdutoService {
                 idVendedor,
                 precoMin,
                 precoMax,
+                avaliacaoMin,
                 somenteComEstoque == null || somenteComEstoque,
                 PageRequest.of(Math.max(page, 0), tamanhoPagina(size), ordenacao(sort))
         );
@@ -74,6 +97,28 @@ public class ProdutoService {
         return repository.buscarTodos(idVendedor, vazioParaNull(nome), ativo,
                 PageRequest.of(Math.max(page, 0), tamanhoPagina(size),
                         Sort.by(Sort.Direction.DESC, "dataCadastro").and(Sort.by("id"))));
+    }
+
+    /**
+     * Mais vendidos (soma das quantidades em pedidos não cancelados). Se houver poucas vendas,
+     * completa com os mais bem avaliados, para a vitrine nunca ficar vazia.
+     */
+    public List<Produto> maisVendidos(Long idCategoria, Integer limite) {
+        int quantidade = limite == null ? 10 : Math.min(Math.max(limite, 1), 20);
+        List<Long> ids = itemPedidoRepository.idsMaisVendidos(
+                List.of(StatusPedido.CANCELADO, StatusPedido.DEVOLVIDO), idCategoria, PageRequest.of(0, quantidade));
+        Map<Long, Produto> porId = repository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Produto::getId, Function.identity()));
+        List<Produto> resultado = new ArrayList<>(ids.stream().map(porId::get).filter(Objects::nonNull).toList());
+        if (resultado.size() < quantidade) {
+            Set<Long> jaIncluidos = new HashSet<>(ids);
+            buscarVitrine(null, idCategoria, null, null, null, null, true, "avaliacao,desc", 0, PAGE_SIZE_MAXIMO)
+                    .stream()
+                    .filter(p -> !jaIncluidos.contains(p.getId()))
+                    .limit(quantidade - resultado.size())
+                    .forEach(resultado::add);
+        }
+        return resultado;
     }
 
     public Produto buscarPorId(Long id) {
@@ -115,6 +160,12 @@ public class ProdutoService {
     public void remover(Long id) {
         Produto produto = buscarPorId(id);
         validarDono(produto);
+        if (itemPedidoRepository.existsByProdutoId(id)) {
+            throw new ConflitoException("Este produto já foi vendido e aparece em pedidos de clientes. "
+                    + "Pause o anúncio (ativo=false) em vez de excluí-lo.");
+        }
+        itemCarrinhoRepository.removerProdutosDosCarrinhos(List.of(id));
+        favoritoRepository.removerDosProdutos(List.of(id));
         repository.delete(produto);
         repository.flush();
     }

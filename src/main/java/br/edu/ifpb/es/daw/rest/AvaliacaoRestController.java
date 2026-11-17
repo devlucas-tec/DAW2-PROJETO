@@ -1,5 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
+import br.edu.ifpb.es.daw.rest.dto.response.PodeAvaliarDTO;
+import br.edu.ifpb.es.daw.rest.dto.response.AvaliacaoResumoDTO;
+import io.swagger.v3.oas.annotations.Operation;
 import br.edu.ifpb.es.daw.mapper.AvaliacaoMapper;
 import br.edu.ifpb.es.daw.model.Cliente;
 import br.edu.ifpb.es.daw.model.Produto;
@@ -36,6 +39,26 @@ public class AvaliacaoRestController implements AvaliacaoRestControllerApi {
                 ? service.recuperarPorProduto(idProduto, page).map(mapper::from)
                 : service.recuperarTodos(page).map(mapper::from);
         return ResponseEntity.ok(pagina);
+    }
+
+    @GetMapping("/resumo")
+    @Operation(summary = "Resumo das avaliações de um produto (público): média, total e quantidade por nota (histograma)")
+    public ResponseEntity<AvaliacaoResumoDTO> resumo(@RequestParam Long idProduto) {
+        return ResponseEntity.ok(service.resumo(idProduto));
+    }
+
+    @GetMapping("/pode-avaliar")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    @Operation(summary = "Se o cliente logado pode avaliar o produto (recebeu e ainda não avaliou)")
+    public ResponseEntity<PodeAvaliarDTO> podeAvaliar(@RequestParam Long idProduto) {
+        return ResponseEntity.ok(service.podeAvaliar(idProduto));
+    }
+
+    @GetMapping("/recebidas")
+    @PreAuthorize("hasAuthority('VENDEDOR')")
+    @Operation(summary = "Avaliações dos produtos do vendedor logado, mais recentes primeiro")
+    public ResponseEntity<Page<AvaliacaoResponseDTO>> recebidas(@RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(service.recuperarRecebidas(page).map(mapper::from));
     }
 
     @Override @GetMapping("/minhas")

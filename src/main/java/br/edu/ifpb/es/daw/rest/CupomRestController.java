@@ -1,5 +1,6 @@
 package br.edu.ifpb.es.daw.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
 import br.edu.ifpb.es.daw.mapper.CupomMapper;
 import br.edu.ifpb.es.daw.model.enums.StatusCupom;
 import br.edu.ifpb.es.daw.rest.dto.request.CupomRequestDTO;
@@ -24,6 +25,14 @@ public class CupomRestController implements CupomRestControllerApi {
     @Override @GetMapping
     public ResponseEntity<Page<CupomResponseDTO>> listar(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(service.recuperarTodos(page).map(mapper::from));
+    }
+
+    @GetMapping("/validar")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Conferir se um cupom pode ser usado agora (qualquer usuário logado). "
+            + "Cupom inexistente, inativo ou expirado responde 422 com a mensagem para exibir no campo")
+    public ResponseEntity<CupomResponseDTO> validar(@RequestParam String codigo) {
+        return ResponseEntity.ok(mapper.from(service.validarParaUso(codigo)));
     }
 
     @Override @GetMapping("/buscar")
