@@ -130,6 +130,7 @@ public class CarrinhoService {
 
     private Cliente clienteLogado() {
         Long id = usuarioAutenticado.getUsuario().getId();
+        clienteRepository.travarParaAtualizacao(id);
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new AccessDeniedException("Apenas clientes possuem carrinho."));
     }
