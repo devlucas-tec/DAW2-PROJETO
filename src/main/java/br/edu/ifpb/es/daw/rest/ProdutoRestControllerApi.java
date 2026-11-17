@@ -33,6 +33,14 @@ public interface ProdutoRestControllerApi {
     @Operation(summary = "Listar os produtos do vendedor logado, inclusive inativos e sem estoque")
     ResponseEntity<Page<ProdutoResponseDTO>> meus(String nome, Boolean ativo, int page, Integer size);
 
+    @Operation(summary = "Listar todos os produtos de todas as lojas (ADMIN), inclusive inativos e sem estoque")
+    ResponseEntity<Page<ProdutoResponseDTO>> todos(
+            @Parameter(description = "Filtra pela loja (id do vendedor).") Long idVendedor,
+            String nome,
+            @Parameter(description = "true = ativos, false = pausados; vazio = todos.") Boolean ativo,
+            int page,
+            @Parameter(description = "Tamanho da página (1 a 50, padrão 10).") Integer size);
+
     @Operation(summary = "Criar produto")
     ResponseEntity<ProdutoResponseDTO> adicionar(ProdutoRequestDTO dto);
 

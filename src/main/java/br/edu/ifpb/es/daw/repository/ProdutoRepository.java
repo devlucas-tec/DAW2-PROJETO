@@ -48,6 +48,15 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
             """)
     Page<Produto> buscarDoVendedor(Long idVendedor, String nome, Boolean ativo, Pageable pageable);
 
+    /** Painel do admin: todos os produtos de todas as lojas, inclusive inativos e sem estoque. */
+    @Query("""
+            SELECT p FROM Produto p
+            WHERE (:idVendedor IS NULL OR p.vendedor.id = :idVendedor)
+            AND   (:nome       IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', CAST(:nome AS string), '%')))
+            AND   (:ativo      IS NULL OR p.ativo = :ativo)
+            """)
+    Page<Produto> buscarTodos(Long idVendedor, String nome, Boolean ativo, Pageable pageable);
+
     List<Produto> findByVendedorIdAndEstoqueLessThanEqualOrderByEstoqueAscNomeAsc(Long idVendedor, int estoque);
 
     long countByVendedorIdAndAtivoTrue(Long idVendedor);
