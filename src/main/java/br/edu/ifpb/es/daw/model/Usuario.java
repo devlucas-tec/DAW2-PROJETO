@@ -44,6 +44,14 @@ public abstract class Usuario {
     @Column(nullable = false)
     private boolean ativo = true;
 
+    /** Conta excluída pelo próprio usuário: os dados pessoais são anonimizados e o login fica bloqueado. */
+    @org.hibernate.annotations.ColumnDefault("false")
+    @Column(nullable = false)
+    private boolean excluido = false;
+
+    @Column(name = "data_exclusao")
+    private LocalDateTime dataExclusao;
+
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 

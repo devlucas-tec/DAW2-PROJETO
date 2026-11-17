@@ -9,5 +9,8 @@ import org.mapstruct.Mapping;
 public interface DevolucaoMapper {
 
     @Mapping(target = "idPedido", source = "pedido.id")
+    @Mapping(target = "idCliente", source = "pedido.cliente.id")
+    @Mapping(target = "nomeCliente", source = "pedido.cliente.nome")
+    @Mapping(target = "valorPedido", source = "pedido.valorTotal")
     DevolucaoResponseDTO from(Devolucao obj);
 }

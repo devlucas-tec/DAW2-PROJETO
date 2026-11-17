@@ -1,5 +1,8 @@
 package br.edu.ifpb.es.daw.rest;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import br.edu.ifpb.es.daw.service.ContaService;
+import br.edu.ifpb.es.daw.rest.dto.request.ExcluirContaDTO;
 import br.edu.ifpb.es.daw.model.Usuario;
 import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.rest.dto.request.AlterarAtivoDTO;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UsuarioRestController {
 
     @Autowired private UsuarioService service;
+    @Autowired private ContaService contaService;
 
     @GetMapping
     @Operation(summary = "Listar usuários, com filtro por nome/e-mail, papel e situação")
@@ -38,6 +42,16 @@ public class UsuarioRestController {
     public ResponseEntity<UsuarioAdminResponseDTO> alterarAtivo(@PathVariable Long id,
                                                                 @RequestBody @Valid AlterarAtivoDTO dto) {
         return ResponseEntity.ok(from(service.alterarAtivo(id, dto.getAtivo())));
+    }
+
+    @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Excluir a própria conta (qualquer perfil), confirmando a senha. "
+            + "Contas sem histórico são apagadas com tudo o que pertence a elas (o vendedor leva os produtos junto); "
+            + "contas com pedidos são anonimizadas e os produtos vendidos saem da vitrine")
+    public ResponseEntity<Void> excluirMinhaConta(@RequestBody @Valid ExcluirContaDTO dto) {
+        contaService.excluirPropriaConta(dto.getSenha());
+        return ResponseEntity.noContent().build();
     }
 
     private static UsuarioAdminResponseDTO from(Usuario usuario) {

@@ -6,6 +6,8 @@ import br.edu.ifpb.es.daw.model.Vendedor;
 import br.edu.ifpb.es.daw.model.enums.Role;
 import br.edu.ifpb.es.daw.repository.VendedorRepository;
 import br.edu.ifpb.es.daw.rest.dto.request.VendedorUpdateDTO;
+import java.util.Comparator;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,9 @@ public class VendedorService {
     @Autowired
     private AvaliacaoRepository avaliacaoRepository;
 
+    @Autowired
+    private ContaService contaService;
+
     @Transactional
     public Vendedor criar(Vendedor obj) {
         usuarioService.validarEmailDisponivel(obj.getEmail(), null);
@@ -55,17 +60,48 @@ public class VendedorService {
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Vendedor", id));
     }
 
-    /** Perfil público da loja. Um vendedor bloqueado só é visível para o ADMIN. */
+    /** Perfil público da loja. Um vendedor bloqueado ou excluído só é visível para o ADMIN. */
     public VendedorPublicoResponseDTO buscarPerfilPublico(Long id) {
         Vendedor vendedor = buscarPorId(id);
-        if (!vendedor.isAtivo() && !usuarioAutenticado.isAdmin()) {
+        if ((!vendedor.isAtivo() || vendedor.isExcluido()) && !usuarioAutenticado.isAdmin()) {
             throw new EntidadeNaoEncontradaException("Vendedor", id);
         }
+        return montarPerfilPublico(vendedor);
+    }
+
+    /** Lojas em destaque da home: as mais bem avaliadas entre as que têm produtos à venda. */
+    public List<VendedorPublicoResponseDTO> lojasEmDestaque(Integer limite) {
+        int quantidade = limite == null ? 8 : Math.min(Math.max(limite, 1), 20);
+        return repository.buscarLojasComProdutosAVenda().stream()
+                .map(this::montarPerfilPublico)
+                .sorted(Comparator
+                        .comparing(VendedorPublicoResponseDTO::getMediaAvaliacoes,
+                                Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(VendedorPublicoResponseDTO::getTotalAvaliacoes, Comparator.reverseOrder())
+                        .thenComparing(VendedorPublicoResponseDTO::getTotalProdutos, Comparator.reverseOrder())
+                        .thenComparing(VendedorPublicoResponseDTO::getId))
+                .limit(quantidade)
+                .toList();
+    }
+
+    /** O vendedor logado fecha (aberta=false) ou reabre a própria loja. */
+    @Transactional
+    public Vendedor alterarLojaAberta(boolean aberta) {
+        Vendedor vendedor = buscarPorId(usuarioAutenticado.getUsuario().getId());
+        vendedor.setLojaAberta(aberta);
+        return repository.save(vendedor);
+    }
+
+    private VendedorPublicoResponseDTO montarPerfilPublico(Vendedor vendedor) {
+        Long id = vendedor.getId();
         VendedorPublicoResponseDTO dto = new VendedorPublicoResponseDTO();
         dto.setId(vendedor.getId());
         dto.setNome(vendedor.getNome());
         dto.setRazaoSocial(vendedor.getRazaoSocial());
         dto.setDataCadastro(vendedor.getDataCadastro());
+        dto.setDescricao(vendedor.getDescricao());
+        dto.setBannerUrl(vendedor.getBannerUrl());
+        dto.setLojaAberta(vendedor.isLojaAberta());
         dto.setTotalProdutos(produtoRepository.countByVendedorIdAndAtivoTrue(id));
         long totalAvaliacoes = avaliacaoRepository.countByProdutoVendedorId(id);
         Double media = avaliacaoRepository.mediaPorVendedor(id);
@@ -86,13 +122,20 @@ public class VendedorService {
             validarCnpjCpfDisponivel(dto.getCnpjCpf(), vendedor.getId());
             vendedor.setCnpjCpf(dto.getCnpjCpf());
         }
+        if (dto.getDescricao() != null) {
+            vendedor.setDescricao(dto.getDescricao().isBlank() ? null : dto.getDescricao().trim());
+        }
+        if (dto.getBannerUrl() != null) {
+            vendedor.setBannerUrl(dto.getBannerUrl().isBlank() ? null : dto.getBannerUrl().trim());
+        }
         return repository.save(vendedor);
     }
 
+    /** Exclusão pelo ADMIN: mesmas regras da exclusão feita pelo próprio vendedor (ver {@link ContaService}). */
     @Transactional
     public void remover(Long id) {
-        repository.delete(buscarPorId(id));
-        repository.flush();
+        buscarPorId(id);
+        contaService.excluirPorId(id);
     }
 
     private void validarCnpjCpfDisponivel(String cnpjCpf, Long idAtual) {

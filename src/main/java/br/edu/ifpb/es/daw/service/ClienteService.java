@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ClienteService {
 
+    @Autowired
+    private ContaService contaService;
+
     private static final int PAGE_SIZE = 10;
 
     @Autowired
@@ -67,7 +70,7 @@ public class ClienteService {
 
     @Transactional
     public void remover(Long id) {
-        repository.delete(buscarPorId(id));
-        repository.flush();
+        buscarPorId(id);
+        contaService.excluirPorId(id);
     }
 }

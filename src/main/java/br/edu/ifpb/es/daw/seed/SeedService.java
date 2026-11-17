@@ -23,8 +23,8 @@ import java.util.List;
 public class SeedService {
 
     private static final int QUANTIDADE = 50;
-    /** Os produtos são distribuídos entre os 10 primeiros vendedores (5 produtos cada). */
-    private static final int VENDEDORES_COM_PRODUTOS = 10;
+    /** Os produtos são distribuídos entre os 5 primeiros vendedores (10 produtos cada), para as lojas terem vitrine cheia. */
+    private static final int VENDEDORES_COM_PRODUTOS = 5;
 
     private final AdminRepository adminRepository;
     private final ClienteRepository clienteRepository;
@@ -46,6 +46,15 @@ public class SeedService {
     private final AvaliacaoService avaliacaoService;
     private final PasswordEncoder passwordEncoder;
     private final StartupListener startupListener;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private br.edu.ifpb.es.daw.repository.FavoritoRepository favoritoRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private br.edu.ifpb.es.daw.repository.NotificacaoRepository notificacaoRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private br.edu.ifpb.es.daw.service.NotificacaoService notificacaoService;
 
     public SeedService(
             AdminRepository adminRepository,
@@ -93,6 +102,8 @@ public class SeedService {
 
     @Transactional
     public void limpar() {
+        notificacaoRepository.deleteAllInBatch();
+        favoritoRepository.deleteAllInBatch();
         avaliacaoRepository.deleteAllInBatch();
         devolucaoRepository.deleteAllInBatch();
         entregaRepository.deleteAllInBatch();
@@ -132,6 +143,8 @@ public class SeedService {
         criarCarrinhos(clientes, produtos);
         criarCompras(clientes, enderecos, produtos, cupons);
         produtos.forEach(avaliacaoService::atualizarResumoDoProduto);
+        criarFavoritos(clientes, produtos);
+        criarNotificacoes();
     }
 
     private void criarAdmins() {
@@ -167,6 +180,10 @@ public class SeedService {
             vendedor.setRole(Role.VENDEDOR);
             vendedor.setRazaoSocial(nomeBase + " " + i + " Ltda");
             vendedor.setCnpjCpf(String.format("%02d.%03d.%03d/0001-%02d", i, i * 3, i * 7, i % 99 + 1));
+            vendedor.setDescricao("Loja de " + segmento.toLowerCase() + " com produtos originais, nota fiscal e "
+                    + "envio em até 2 dias úteis. Atendimento de segunda a sábado.");
+            vendedor.setBannerUrl("https://loremflickr.com/1200/300/" + semAcentos(segmento).toLowerCase().replace(" ", "")
+                    + "?lock=" + i);
             vendedores.add(vendedorRepository.save(vendedor));
         }
         return vendedores;
@@ -478,6 +495,42 @@ public class SeedService {
             pagamentoRepository.save(pagamento);
             historico(pedido, EtapaPedido.DEVOLVIDO, data.plusDays(10), "Devolução aprovada e pagamento estornado.", vendedor);
         }
+    }
+
+    /** Os 10 primeiros clientes favoritam 3 produtos à venda cada, para a lista de desejos ter conteúdo. */
+    private void criarFavoritos(List<Cliente> clientes, List<Produto> produtos) {
+        List<Produto> aVenda = produtos.stream().filter(Produto::isDisponivelParaVenda).toList();
+        for (int i = 0; i < Math.min(10, clientes.size()); i++) {
+            for (int j = 0; j < 3; j++) {
+                br.edu.ifpb.es.daw.model.Favorito favorito = new br.edu.ifpb.es.daw.model.Favorito();
+                favorito.setCliente(clientes.get(i));
+                favorito.setProduto(aVenda.get((i * 3 + j) % aVenda.size()));
+                favoritoRepository.save(favorito);
+            }
+        }
+    }
+
+    /**
+     * Notificações de demonstração a partir da timeline dos pedidos mais recentes: o vendedor recebe
+     * "Novo pedido" e o cliente recebe a última mudança de status. As 3 mais antigas de cada usuário ficam lidas.
+     */
+    private void criarNotificacoes() {
+        List<Pedido> recentes = pedidoRepository.findAll(org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Direction.DESC, "dataPedido")).stream().limit(20).toList();
+        for (Pedido pedido : recentes) {
+            notificacaoService.notificarEtapa(pedido, EtapaPedido.PEDIDO_CONFIRMADO, null);
+            if (pedido.getHistorico().size() > 1) {
+                EtapaPedido ultima = pedido.getHistorico().get(pedido.getHistorico().size() - 1).getEtapa();
+                notificacaoService.notificarEtapa(pedido, ultima, null);
+            }
+        }
+        notificacaoRepository.findAll(org.springframework.data.domain.Sort.by("id")).stream()
+                .collect(java.util.stream.Collectors.groupingBy(n -> n.getUsuario().getId()))
+                .values()
+                .forEach(lista -> lista.stream().limit(3).forEach(n -> {
+                    n.setLida(true);
+                    notificacaoRepository.save(n);
+                }));
     }
 
     private void baixarEstoque(Pedido pedido) {

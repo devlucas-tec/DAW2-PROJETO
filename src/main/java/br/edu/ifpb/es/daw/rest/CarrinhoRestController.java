@@ -1,5 +1,7 @@
 package br.edu.ifpb.es.daw.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import br.edu.ifpb.es.daw.rest.dto.request.MesclarCarrinhoDTO;
 import br.edu.ifpb.es.daw.mapper.CarrinhoMapper;
 import br.edu.ifpb.es.daw.rest.dto.request.AdicionarItemCarrinhoDTO;
 import br.edu.ifpb.es.daw.rest.dto.request.CarrinhoRequestDTO;
@@ -48,6 +50,14 @@ public class CarrinhoRestController implements CarrinhoRestControllerApi {
     @PreAuthorize("hasAuthority('CLIENTE')")
     public ResponseEntity<CarrinhoResponseDTO> removerItem(@PathVariable Long idProduto) {
         return ResponseEntity.ok(mapper.from(service.removerItem(idProduto)));
+    }
+
+    @PostMapping("/meu/mesclar")
+    @PreAuthorize("hasAuthority('CLIENTE')")
+    @Operation(summary = "Juntar o carrinho de visitante (localStorage) ao carrinho do cliente depois do login. "
+            + "Soma as quantidades (limitadas ao estoque) e ignora itens indisponíveis")
+    public ResponseEntity<CarrinhoResponseDTO> mesclar(@RequestBody @Valid MesclarCarrinhoDTO dto) {
+        return ResponseEntity.ok(mapper.from(service.mesclar(dto.getItens())));
     }
 
     @Override @DeleteMapping("/meu")

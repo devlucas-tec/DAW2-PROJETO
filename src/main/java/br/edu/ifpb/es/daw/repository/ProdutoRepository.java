@@ -17,11 +17,13 @@ import java.util.List;
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-    /** Vitrine pública: só anúncios ativos de vendedores ativos. */
+    /** Vitrine pública: só anúncios ativos de vendedores ativos com a loja aberta. */
     @Query("""
             SELECT p FROM Produto p
             WHERE p.ativo = true
             AND   p.vendedor.ativo = true
+            AND   p.vendedor.lojaAberta = true
+            AND   (:avaliacaoMin IS NULL OR p.mediaAvaliacoes >= :avaliacaoMin)
             AND   (:somenteComEstoque = false OR p.estoque > 0)
             AND   (:nome        IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', CAST(:nome AS string), '%')))
             AND   (:idCategoria IS NULL OR p.categoria.id = :idCategoria)
@@ -35,6 +37,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
             Long idVendedor,
             BigDecimal precoMin,
             BigDecimal precoMax,
+            Double avaliacaoMin,
             boolean somenteComEstoque,
             Pageable pageable
     );
@@ -68,4 +71,11 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     @Modifying
     @Query(value = "DELETE FROM produto_imagem", nativeQuery = true)
     void removerTodasAsImagens();
+
+    List<Produto> findByVendedorId(Long idVendedor);
+
+    /** Pausa todos os anúncios de um vendedor (usado ao excluir a conta). */
+    @Modifying
+    @Query("UPDATE Produto p SET p.ativo = false WHERE p.vendedor.id = :idVendedor")
+    int pausarTodosDoVendedor(Long idVendedor);
 }

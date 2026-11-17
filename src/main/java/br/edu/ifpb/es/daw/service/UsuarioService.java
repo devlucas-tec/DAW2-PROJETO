@@ -75,6 +75,9 @@ public class UsuarioService {
     public Usuario alterarAtivo(Long id, boolean ativo) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Usuario", id));
+        if (usuario.isExcluido()) {
+            throw new EstadoInvalidoException("Esta conta foi excluída pelo próprio usuário e não pode ser reativada.");
+        }
         if (!ativo && Objects.equals(usuario.getId(), usuarioAutenticado.getUsuario().getId())) {
             throw new EstadoInvalidoException("Você não pode bloquear a si mesmo.");
         }

@@ -15,6 +15,9 @@ public class PedidoHistoricoService {
     @Autowired
     private UsuarioAutenticadoService usuarioAutenticado;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     /** Adiciona uma etapa à timeline do pedido, com o usuário logado como autor. É salvo junto com o pedido (cascade). */
     public PedidoHistorico registrar(Pedido pedido, EtapaPedido etapa, String descricao) {
         PedidoHistorico registro = new PedidoHistorico();
@@ -24,6 +27,9 @@ public class PedidoHistoricoService {
         registro.setData(LocalDateTime.now());
         usuarioAutenticado.getUsuarioOpcional().ifPresent(autor -> preencherAutor(registro, autor));
         pedido.getHistorico().add(registro);
+        if (pedido.getId() != null) {
+            notificacaoService.notificarEtapa(pedido, etapa, descricao);
+        }
         return registro;
     }
 

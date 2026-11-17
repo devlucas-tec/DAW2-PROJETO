@@ -13,4 +13,7 @@ public class VendedorResponseDTO {
     private String email;
     private boolean ativo;
     private LocalDateTime dataCadastro;
+    private String descricao;
+    private String bannerUrl;
+    private boolean lojaAberta;
 }

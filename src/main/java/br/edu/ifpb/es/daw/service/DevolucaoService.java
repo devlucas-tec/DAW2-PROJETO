@@ -61,6 +61,13 @@ public class DevolucaoService {
                         Sort.by(Sort.Direction.DESC, "dataDevolucao").and(Sort.by(Sort.Direction.DESC, "id"))));
     }
 
+    /** VENDEDOR: devoluções de pedidos com itens dele. ADMIN: todas. Filtro opcional por status. */
+    public Page<Devolucao> recuperarRecebidas(StatusDevolucao status, int page) {
+        Long idVendedor = usuarioAutenticado.isAdmin() ? null : usuarioAutenticado.getUsuario().getId();
+        return repository.buscarRecebidas(idVendedor, status, PageRequest.of(Math.max(page, 0), PAGE_SIZE,
+                Sort.by(Sort.Direction.DESC, "dataDevolucao").and(Sort.by(Sort.Direction.DESC, "id"))));
+    }
+
     public Devolucao buscarPorId(Long id) {
         Devolucao devolucao = repository.findById(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Devolucao", id));

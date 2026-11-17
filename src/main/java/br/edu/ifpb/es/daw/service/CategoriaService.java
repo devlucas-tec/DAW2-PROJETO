@@ -27,7 +27,14 @@ public class CategoriaService {
     }
 
     public Page<Categoria> recuperarTodos(int page) {
-        return repository.findAll(PageRequest.of(page, PAGE_SIZE));
+        return recuperarTodos(page, null);
+    }
+
+    /** Lista paginada em ordem alfabética; size de 1 a 100 (padrão 10), para o menu de categorias pegar todas de uma vez. */
+    public Page<Categoria> recuperarTodos(int page, Integer size) {
+        int tamanho = size == null ? PAGE_SIZE : Math.min(Math.max(size, 1), 100);
+        return repository.findAll(PageRequest.of(Math.max(page, 0), tamanho,
+                org.springframework.data.domain.Sort.by("nome").and(org.springframework.data.domain.Sort.by("id"))));
     }
 
     public Categoria buscarPorId(Long id) {

@@ -90,8 +90,8 @@ public class Produto {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    /** Produto que pode ser vendido: anúncio ativo de um vendedor ativo. */
+    /** Produto que pode ser vendido: anúncio ativo de um vendedor ativo com a loja aberta. */
     public boolean isDisponivelParaVenda() {
-        return ativo && vendedor != null && vendedor.isAtivo();
+        return ativo && vendedor != null && vendedor.isLojaVisivel();
     }
 }
