@@ -29,6 +29,10 @@ public interface PedidoMapper {
     @Mapping(target = "dataEnvio", source = "entrega.dataEnvio")
     @Mapping(target = "dataEntregaPrevista", source = "entrega.dataEntregaPrevista")
     @Mapping(target = "dataEntrega", source = "entrega.dataEntrega")
+    @Mapping(target = "idDevolucao", source = "ultimaDevolucao.id")
+    @Mapping(target = "statusDevolucao", source = "ultimaDevolucao.status")
+    @Mapping(target = "dataDevolucao", source = "ultimaDevolucao.dataDevolucao")
+    @Mapping(target = "motivoDevolucao", source = "ultimaDevolucao.motivo")
     PedidoResponseDTO from(Pedido obj);
 
     EnderecoEntregaResponseDTO from(EnderecoEntrega obj);

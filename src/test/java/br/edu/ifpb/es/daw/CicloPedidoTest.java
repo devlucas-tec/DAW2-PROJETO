@@ -96,6 +96,62 @@ class CicloPedidoTest extends IntegracaoTestBase {
     }
 
     @Test
+    @DisplayName("A etapa do pedido acompanha a devolução: solicitada, recusada, solicitada de novo e devolvido")
+    void etapaAcompanhaDevolucao() throws Exception {
+        Cliente cliente = criarCliente();
+        Endereco endereco = criarEndereco(cliente);
+        Vendedor vendedor = criarVendedor();
+        Produto produto = criarProduto(vendedor, "50.00", 10);
+        String tokenCliente = login(cliente);
+        String tokenVendedor = login(vendedor);
+
+        executar(post("/carrinhos/meu/itens"), tokenCliente, json("{'idProduto':%d,'quantidade':1}", produto.getId()));
+        Integer idPedido = ler(executar(post("/checkout"), tokenCliente,
+                json("{'idEndereco':%d,'metodoPagamento':'CARTAO'}", endereco.getId())), "$.pedidos[0].id");
+        String urlStatus = "/pedidos/" + idPedido + "/status";
+        executar(patch(urlStatus), tokenVendedor, "{\"status\":\"EMBALADO\"}").andExpect(status().isOk());
+        executar(patch(urlStatus), tokenVendedor,
+                json("{'status':'EM_TRANSITO','transportadora':'Correios','codigoRastreamento':'BRDEV%d'}", proximo()))
+                .andExpect(status().isOk());
+        executar(patch(urlStatus), tokenVendedor, "{\"status\":\"SAIU_PARA_ENTREGA\"}").andExpect(status().isOk());
+        executar(patch(urlStatus), tokenVendedor, "{\"status\":\"ENTREGUE\"}").andExpect(status().isOk());
+
+        executar(get("/pedidos/" + idPedido), tokenCliente)
+                .andExpect(jsonPath("$.etapaAtual").value("ENTREGUE"))
+                .andExpect(jsonPath("$.statusDevolucao").doesNotExist());
+
+        String pedirDevolucao = json("{'idPedido':%d,'motivo':'Veio com defeito'}", idPedido);
+        Integer primeira = ler(executar(post("/devolucoes"), tokenCliente, pedirDevolucao)
+                .andExpect(status().isCreated()), "$.id");
+        executar(get("/pedidos/" + idPedido), tokenCliente)
+                .andExpect(jsonPath("$.etapaAtual").value("DEVOLUCAO_SOLICITADA"))
+                .andExpect(jsonPath("$.idDevolucao").value(primeira))
+                .andExpect(jsonPath("$.statusDevolucao").value("PENDENTE"))
+                .andExpect(jsonPath("$.motivoDevolucao").value("Veio com defeito"));
+        // O vendedor vê a mesma etapa na lista de pedidos recebidos.
+        executar(get("/pedidos"), tokenVendedor)
+                .andExpect(jsonPath("$.content[0].etapaAtual").value("DEVOLUCAO_SOLICITADA"));
+
+        executar(patch("/devolucoes/" + primeira + "/rejeitar"), tokenVendedor).andExpect(status().isOk());
+        executar(get("/pedidos/" + idPedido), tokenCliente)
+                .andExpect(jsonPath("$.etapaAtual").value("DEVOLUCAO_RECUSADA"))
+                .andExpect(jsonPath("$.statusDevolucao").value("RECUSADA"));
+
+        // Depois de uma recusa o cliente pode pedir de novo; vale a devolução mais recente.
+        Integer segunda = ler(executar(post("/devolucoes"), tokenCliente, pedirDevolucao)
+                .andExpect(status().isCreated()), "$.id");
+        executar(get("/pedidos/" + idPedido), tokenCliente)
+                .andExpect(jsonPath("$.etapaAtual").value("DEVOLUCAO_SOLICITADA"))
+                .andExpect(jsonPath("$.idDevolucao").value(segunda));
+
+        executar(patch("/devolucoes/" + segunda + "/aprovar"), tokenVendedor).andExpect(status().isOk());
+        executar(get("/pedidos/" + idPedido), tokenCliente)
+                .andExpect(jsonPath("$.status").value("DEVOLVIDO"))
+                .andExpect(jsonPath("$.etapaAtual").value("DEVOLVIDO"))
+                .andExpect(jsonPath("$.statusDevolucao").value("APROVADA"));
+    }
+
+    @Test
     @DisplayName("Pagamento com cartão já começa aprovado; filtro de pedidos por status funciona")
     void cartaoAprovadoEFiltroPorStatus() throws Exception {
         Cliente cliente = criarCliente();

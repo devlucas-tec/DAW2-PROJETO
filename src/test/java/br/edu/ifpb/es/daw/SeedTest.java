@@ -1,6 +1,9 @@
 package br.edu.ifpb.es.daw;
 
 import br.edu.ifpb.es.daw.model.Pedido;
+import br.edu.ifpb.es.daw.model.PedidoHistorico;
+import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
+import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
 import br.edu.ifpb.es.daw.seed.SeedService;
 import org.junit.jupiter.api.DisplayName;
@@ -8,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +44,22 @@ class SeedTest extends IntegracaoTestBase {
         // Pedidos confirmados com pagamento aprovado e entrega têm etapa coerente.
         assertThat(pedidos.stream().filter(p -> p.getStatus() == StatusPedido.CONFIRMADO))
                 .allMatch(p -> p.getEtapaAtual() != null);
+        // Nenhuma etapa fica no futuro e a linha do tempo de cada pedido está em ordem.
+        LocalDateTime agora = LocalDateTime.now();
+        assertThat(pedidos).allSatisfy(p -> {
+            List<LocalDateTime> datas = p.getHistorico().stream().map(PedidoHistorico::getData).toList();
+            assertThat(datas).allMatch(d -> !d.isAfter(agora));
+            assertThat(datas).isSorted();
+            if (p.getEntrega() != null && p.getEntrega().getDataEntrega() != null) {
+                assertThat(p.getEntrega().getDataEntrega()).isBeforeOrEqualTo(agora);
+            }
+            p.getDevolucoes().forEach(d -> assertThat(d.getDataDevolucao()).isBeforeOrEqualTo(agora));
+        });
+        // Devolução pendente aparece na etapa do pedido.
+        assertThat(pedidos.stream().filter(p -> p.getUltimaDevolucao() != null
+                && p.getUltimaDevolucao().getStatus() == StatusDevolucao.PENDENTE))
+                .isNotEmpty()
+                .allMatch(p -> p.getEtapaAtual() == EtapaPedido.DEVOLUCAO_SOLICITADA);
         // Avaliações só existem para produtos que o cliente recebeu.
         assertThat(produtoRepository.findAll().stream().filter(p -> p.getTotalAvaliacoes() > 0)).isNotEmpty();
         assertThat(pedidos.stream().map(Pedido::getEntrega).filter(Objects::nonNull)).isNotEmpty();
