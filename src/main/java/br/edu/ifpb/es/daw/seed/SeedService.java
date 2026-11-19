@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -419,7 +420,7 @@ public class SeedService {
                     avaliacao.setProduto(produto);
                     avaliacao.setNota(1 + (i % 5));
                     avaliacao.setComentario(comentarios[i % comentarios.length]);
-                    avaliacao.setDataAvaliacao(data.plusDays(8));
+                    avaliacao.setDataAvaliacao(depois(data, Duration.ofDays(8)));
                     avaliacaoRepository.save(avaliacao);
                 }
             }
@@ -439,14 +440,14 @@ public class SeedService {
 
         if (cancelado) {
             pedido.setStatus(StatusPedido.CANCELADO);
-            historico(pedido, EtapaPedido.CANCELADO, data.plusHours(2), "Pedido cancelado pelo cliente.", cliente);
+            historico(pedido, EtapaPedido.CANCELADO, depois(data, Duration.ofHours(2)), "Pedido cancelado pelo cliente.", cliente);
             return;
         }
         baixarEstoque(pedido);
         if (aguardandoPagamento) {
             return;
         }
-        historico(pedido, EtapaPedido.PAGAMENTO_APROVADO, data.plusHours(1), "Pagamento via " + metodo + " confirmado.", vendedor);
+        historico(pedido, EtapaPedido.PAGAMENTO_APROVADO, depois(data, Duration.ofHours(1)), "Pagamento via " + metodo + " confirmado.", vendedor);
         if (cenario == 5) {
             return;
         }
@@ -462,19 +463,23 @@ public class SeedService {
         entrega.setTransportadora(transportadora);
         entrega.setCodigoRastreamento("BR" + String.format("%09d", pedido.getId()) + "BR");
         entrega.setStatusEntrega(statusFinal);
-        entrega.setDataEntregaPrevista(data.plusDays(9));
-        historico(pedido, EtapaPedido.EMBALADO, data.plusDays(1), "Pedido embalado e aguardando envio.", vendedor);
+        // Entregue: a previsão fica no passado, junto da entrega. Em andamento: ainda vai acontecer.
+        LocalDateTime previsao = data.plusDays(9);
+        LocalDateTime minimaEmAndamento = LocalDateTime.now().plusDays(2).withHour(18).withMinute(0).withSecond(0).withNano(0);
+        entrega.setDataEntregaPrevista(statusFinal == StatusEntrega.ENTREGUE || previsao.isAfter(minimaEmAndamento)
+                ? previsao : minimaEmAndamento);
+        historico(pedido, EtapaPedido.EMBALADO, depois(data, Duration.ofDays(1)), "Pedido embalado e aguardando envio.", vendedor);
         if (statusFinal.ordinal() >= StatusEntrega.EM_TRANSITO.ordinal()) {
-            entrega.setDataEnvio(data.plusDays(2));
-            historico(pedido, EtapaPedido.EM_TRANSITO, data.plusDays(2), "Pedido enviado pela " + transportadora
+            entrega.setDataEnvio(depois(data, Duration.ofDays(2)));
+            historico(pedido, EtapaPedido.EM_TRANSITO, depois(data, Duration.ofDays(2)), "Pedido enviado pela " + transportadora
                     + ". Código de rastreamento: " + entrega.getCodigoRastreamento() + ".", vendedor);
         }
         if (statusFinal.ordinal() >= StatusEntrega.SAIU_PARA_ENTREGA.ordinal()) {
-            historico(pedido, EtapaPedido.SAIU_PARA_ENTREGA, data.plusDays(5), "Pedido saiu para entrega.", vendedor);
+            historico(pedido, EtapaPedido.SAIU_PARA_ENTREGA, depois(data, Duration.ofDays(5)), "Pedido saiu para entrega.", vendedor);
         }
         if (statusFinal == StatusEntrega.ENTREGUE) {
-            entrega.setDataEntrega(data.plusDays(6));
-            historico(pedido, EtapaPedido.ENTREGUE, data.plusDays(6), "Pedido entregue.", vendedor);
+            entrega.setDataEntrega(depois(data, Duration.ofDays(6)));
+            historico(pedido, EtapaPedido.ENTREGUE, depois(data, Duration.ofDays(6)), "Pedido entregue.", vendedor);
         }
         pedido.setEntrega(entregaRepository.save(entrega));
 
@@ -483,9 +488,9 @@ public class SeedService {
             devolucao.setPedido(pedido);
             devolucao.setMotivo(motivo);
             devolucao.setStatus(cenario == 9 ? StatusDevolucao.APROVADA : StatusDevolucao.PENDENTE);
-            devolucao.setDataDevolucao(data.plusDays(9));
-            devolucaoRepository.save(devolucao);
-            historico(pedido, EtapaPedido.DEVOLUCAO_SOLICITADA, data.plusDays(9), "Devolução solicitada: " + motivo, cliente);
+            devolucao.setDataDevolucao(depois(data, Duration.ofDays(9)));
+            pedido.getDevolucoes().add(devolucaoRepository.save(devolucao));
+            historico(pedido, EtapaPedido.DEVOLUCAO_SOLICITADA, depois(data, Duration.ofDays(9)), "Devolução solicitada: " + motivo, cliente);
         }
         if (cenario == 9) {
             pedido.getItens().forEach(item ->
@@ -493,7 +498,7 @@ public class SeedService {
             pedido.setStatus(StatusPedido.DEVOLVIDO);
             pagamento.setStatus(StatusPagamento.ESTORNADO);
             pagamentoRepository.save(pagamento);
-            historico(pedido, EtapaPedido.DEVOLVIDO, data.plusDays(10), "Devolução aprovada e pagamento estornado.", vendedor);
+            historico(pedido, EtapaPedido.DEVOLVIDO, depois(data, Duration.ofDays(10)), "Devolução aprovada e pagamento estornado.", vendedor);
         }
     }
 
@@ -558,6 +563,23 @@ public class SeedService {
         pagamento = pagamentoRepository.save(pagamento);
         pedido.setPagamento(pagamento);
         return pagamento;
+    }
+
+    /** Maior distância entre o pedido e a última etapa do fluxo do seed (devolução aprovada). */
+    private static final Duration FLUXO_COMPLETO = Duration.ofDays(10);
+
+    /**
+     * Momento de uma etapa `depois` do pedido. Pedidos recentes não tiveram tempo de passar pelo
+     * fluxo inteiro, então as etapas são comprimidas proporcionalmente: a ordem se mantém e nada
+     * fica no futuro (a última etapa possível cai até 1 hora antes de agora).
+     */
+    private LocalDateTime depois(LocalDateTime data, Duration depois) {
+        long disponivel = Duration.between(data, LocalDateTime.now()).minusHours(1).toMinutes();
+        long total = FLUXO_COMPLETO.toMinutes();
+        if (disponivel >= total) {
+            return data.plus(depois);
+        }
+        return data.plusMinutes(Math.max(disponivel, 0) * depois.toMinutes() / total);
     }
 
     private void historico(Pedido pedido, EtapaPedido etapa, LocalDateTime data, String descricao, Usuario autor) {

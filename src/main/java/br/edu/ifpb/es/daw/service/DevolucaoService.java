@@ -52,7 +52,10 @@ public class DevolucaoService {
         devolucao.setMotivo(motivo);
         devolucao.setStatus(StatusDevolucao.PENDENTE);
         historicoService.registrar(pedido, EtapaPedido.DEVOLUCAO_SOLICITADA, "Devolução solicitada: " + resumir(motivo));
-        return repository.save(devolucao);
+        Devolucao salva = repository.save(devolucao);
+        // Mantém a coleção em memória atualizada: a etapa do pedido depende da última devolução.
+        pedido.getDevolucoes().add(salva);
+        return salva;
     }
 
     public Page<Devolucao> recuperarMinhas(int page) {

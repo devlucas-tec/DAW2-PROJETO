@@ -2,6 +2,7 @@ package br.edu.ifpb.es.daw.rest.dto.response;
 
 import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
 import br.edu.ifpb.es.daw.model.enums.MetodoPagamento;
+import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
 import br.edu.ifpb.es.daw.model.enums.StatusEntrega;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
@@ -39,5 +40,10 @@ public class PedidoResponseDTO {
     private LocalDateTime dataEnvio;
     private LocalDateTime dataEntregaPrevista;
     private LocalDateTime dataEntrega;
+    /** Devolução mais recente do pedido (null se o cliente nunca pediu). */
+    private Long idDevolucao;
+    private StatusDevolucao statusDevolucao;
+    private LocalDateTime dataDevolucao;
+    private String motivoDevolucao;
     private List<ItemPedidoResponseDTO> itens;
 }

@@ -1,6 +1,7 @@
 package br.edu.ifpb.es.daw.model;
 
 import br.edu.ifpb.es.daw.model.enums.EtapaPedido;
+import br.edu.ifpb.es.daw.model.enums.StatusDevolucao;
 import br.edu.ifpb.es.daw.model.enums.StatusPagamento;
 import br.edu.ifpb.es.daw.model.enums.StatusPedido;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -119,15 +121,38 @@ public class Pedido {
             case CANCELADO -> EtapaPedido.CANCELADO;
             case DEVOLVIDO -> EtapaPedido.DEVOLVIDO;
             case CONFIRMADO -> {
+                // A devolução aprovada muda o status para DEVOLVIDO; pendente ou recusada aparece aqui.
+                Devolucao devolucao = getUltimaDevolucao();
+                if (devolucao != null && devolucao.getStatus() == StatusDevolucao.PENDENTE) {
+                    yield EtapaPedido.DEVOLUCAO_SOLICITADA;
+                }
+                if (devolucao != null && devolucao.getStatus() == StatusDevolucao.RECUSADA) {
+                    yield EtapaPedido.DEVOLUCAO_RECUSADA;
+                }
                 if (entrega != null) {
                     yield EtapaPedido.de(entrega.getStatusEntrega());
                 }
                 if (pagamento != null && pagamento.getStatus() == StatusPagamento.APROVADO) {
                     yield EtapaPedido.PAGAMENTO_APROVADO;
                 }
+                if (pagamento != null && pagamento.getStatus() == StatusPagamento.RECUSADO) {
+                    yield EtapaPedido.PAGAMENTO_RECUSADO;
+                }
                 yield EtapaPedido.PEDIDO_CONFIRMADO;
             }
         };
+    }
+
+    /** Devolução mais recente do pedido (o cliente pode pedir de novo depois de uma recusa), ou null. */
+    public Devolucao getUltimaDevolucao() {
+        if (devolucoes == null) {
+            return null;
+        }
+        return devolucoes.stream()
+                .max(Comparator.comparing(Devolucao::getDataDevolucao,
+                                Comparator.nullsFirst(Comparator.naturalOrder()))
+                        .thenComparing(Devolucao::getId, Comparator.nullsFirst(Comparator.naturalOrder())))
+                .orElse(null);
     }
 
     /**
